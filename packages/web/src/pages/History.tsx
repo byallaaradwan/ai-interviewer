@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { createT, type Lang } from '../i18n';
 
@@ -46,6 +46,45 @@ export function History() {
     try { localStorage.setItem(HIST_KEY, JSON.stringify(next)); } catch { /* ignore */ }
   };
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const exportOne = (entry: HistoryEntry) => {
+    const blob = new Blob([JSON.stringify(entry, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `interview-${entry.id}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportAll = () => {
+    const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `interviews-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importFile = async (file: File) => {
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      const incoming: HistoryEntry[] = Array.isArray(data) ? data : [data];
+      const valid = incoming.filter(e => e && e.id && e.ts);
+      if (valid.length === 0) { alert(t('historyImportEmpty')); return; }
+      const existingIds = new Set(entries.map(e => e.id));
+      const merged = [...valid.filter(e => !existingIds.has(e.id)), ...entries];
+      setEntries(merged);
+      try { localStorage.setItem(HIST_KEY, JSON.stringify(merged)); } catch { /* ignore */ }
+      alert(t('historyImportOk').replace('{n}', String(valid.length)));
+    } catch (e: any) {
+      alert(t('historyImportFail') + ': ' + e.message);
+    }
+  };
+
   const clearAll = () => {
     if (!confirm(t('historyConfirmClearAll'))) return;
     setEntries([]);
@@ -63,17 +102,35 @@ export function History() {
           <h1>{t('historyTitle')}</h1>
           <p className="subtitle">{t('historySub')}</p>
         </div>
-        {entries.length > 0 && (
-          <button type="button" className="btn btn-secondary" onClick={clearAll}>
-            {t('historyClearAll')}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button type="button" className="btn btn-secondary" onClick={() => fileInputRef.current?.click()}>
+            {t('historyImport')}
           </button>
-        )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json"
+            style={{ display: 'none' }}
+            onChange={e => { const f = e.target.files?.[0]; if (f) importFile(f); e.target.value = ''; }}
+          />
+          {entries.length > 0 && (
+            <>
+              <button type="button" className="btn btn-secondary" onClick={exportAll}>
+                {t('historyExportAll')}
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={clearAll}>
+                {t('historyClearAll')}
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {entries.length === 0 ? (
         <div className="card placeholder-card">
           <h2 style={{ margin: '0 0 8px' }}>{t('historyEmptyTitle')}</h2>
           <p className="subtitle">{t('historyEmptyBody')}</p>
+          <p className="subtitle" style={{ marginTop: 8 }}>{t('historyEmptyImportHint')}</p>
         </div>
       ) : (
         <div className="history-list">
@@ -93,6 +150,9 @@ export function History() {
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button type="button" className="btn btn-secondary" onClick={() => setOpenId(isOpen ? null : e.id)}>
                       {isOpen ? t('historyHide') : t('historyView')}
+                    </button>
+                    <button type="button" className="btn btn-secondary" onClick={() => exportOne(e)} aria-label="Export">
+                      ↓
                     </button>
                     <button type="button" className="btn btn-secondary" onClick={() => remove(e.id)} aria-label="Delete">
                       ✕
