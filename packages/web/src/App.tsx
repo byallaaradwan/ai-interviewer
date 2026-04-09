@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createT, I18N, type Lang } from './i18n';
+import { SummaryExtras } from './components/SummaryExtras';
 import {
   PROVIDERS, type ProviderId, type HistoryMsg, type SummaryResult,
   getStructuredTurn, stripControlTokens,
@@ -1348,6 +1349,7 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
                   <h2>{t('actionableInsights')}</h2>
                   <ul>{summary.insights.map((x, i) => <li key={i}>{x}</li>)}</ul>
                 </div>
+                <SummaryExtras history={history} themes={summary.themes || []} lang={lang} />
                 {getClosingResponses().length > 0 && (
                   <div className="summary-section">
                     <h2>{t('closingResponses')}</h2>
