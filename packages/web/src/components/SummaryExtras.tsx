@@ -29,11 +29,40 @@ const MOCK_JOURNEY: Journey = {
 
 const EMOJI = (score: number) => score > 0.5 ? '😊' : score > 0.1 ? '🙂' : score > -0.1 ? '😐' : score > -0.5 ? '😕' : '😩';
 
-export function SummaryExtras({ history, themes, lang }: { history: Msg[]; themes: string[]; lang: Lang }) {
+export function SummaryExtras({ history, themes, insights, contradictions, lang }: { history: Msg[]; themes: string[]; insights: string[]; contradictions: { earlier: string; current: string; tension: string }[]; lang: Lang }) {
   const t = createT(lang);
   const [journey, setJourney] = useState<Journey | null>(null);
   const [loadingJ, setLoadingJ] = useState(false);
   const [errJ, setErrJ] = useState<string | null>(null);
+  const [audience, setAudience] = useState<string>('researcher');
+  const [tailored, setTailored] = useState<Record<string, string>>({});
+  const [loadingT, setLoadingT] = useState(false);
+
+  const audiences = [
+    { id: 'researcher', label: t('audResearcher') },
+    { id: 'designers', label: t('audDesigners') },
+    { id: 'engineers', label: t('audEngineers') },
+    { id: 'executives', label: t('audExecutives') },
+    { id: 'stakeholders', label: t('audStakeholders') },
+  ];
+
+  const onAudienceChange = async (id: string) => {
+    setAudience(id);
+    if (id === 'researcher' || tailored[id] || insights.length === 0) return;
+    setLoadingT(true);
+    try {
+      const out = await singleShot({
+        systemText: `Rewrite these UX research insights for a ${id} audience. Emphasize what matters to them (designers: flows/quotes/pain points; engineers: technical issues/edge cases; executives: TL;DR + risks + opportunities; stakeholders: business impact + numbers). Return a short bulleted markdown list.`,
+        userText: insights.join('\n- '),
+        mockResponse: `- (Demo) Tailored insight for ${id} audience #1\n- (Demo) Tailored insight for ${id} audience #2`,
+      });
+      setTailored(prev => ({ ...prev, [id]: out }));
+    } catch (e: any) {
+      setTailored(prev => ({ ...prev, [id]: `Error: ${e.message}` }));
+    } finally {
+      setLoadingT(false);
+    }
+  };
 
   const userMsgs = useMemo(() => history.filter(m => m.role === 'user' && !m.closing), [history]);
 
@@ -94,6 +123,38 @@ export function SummaryExtras({ history, themes, lang }: { history: Msg[]; theme
 
   return (
     <>
+      <div className="summary-section">
+        <h2>{t('audienceTitle')}</h2>
+        <div className="audience-bar">
+          {audiences.map(a => (
+            <button
+              key={a.id}
+              type="button"
+              className={`chip ${audience === a.id ? 'is-selected' : ''}`}
+              onClick={() => onAudienceChange(a.id)}
+            >{a.label}</button>
+          ))}
+        </div>
+        {audience !== 'researcher' && (
+          <div className="ai-output" style={{ marginTop: 12 }}>
+            {loadingT && !tailored[audience] ? t('audienceLoading') : (tailored[audience] || '')}
+          </div>
+        )}
+      </div>
+
+      {contradictions.length > 0 && (
+        <div className="summary-section">
+          <h2>{t('contradictionsTitle')}</h2>
+          {contradictions.map((c, i) => (
+            <div className="contradiction" key={i}>
+              <div className="q-context">{t('contradictionEarlier')}: "{c.earlier}"</div>
+              <div className="q-context">{t('contradictionLater')}: "{c.current}"</div>
+              {c.tension && <div style={{ marginTop: 6, color: 'var(--muted)', fontSize: '0.85rem' }}>{c.tension}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="summary-section">
         <h2>{t('chartsTitle')}</h2>
 

@@ -804,3 +804,6 @@ details.analytics { margin-top: 20px; border-top: 1px solid var(--border); paddi
 .journey-row em { display: block; color: var(--muted); font-style: normal; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; margin-bottom: 2px; }
 .journey-row ul { margin: 0; padding-inline-start: 16px; }
 .journey-quote { font-size: 0.85rem; font-style: italic; padding: 8px; background: var(--card); border-inline-start: 3px solid var(--primary); border-radius: 4px; margin-top: 8px; }
+
+.audience-bar { display: flex; flex-wrap: wrap; gap: 8px; }
+.contradiction { padding: 12px; margin-bottom: 10px; background: var(--bg); border-inline-start: 3px solid var(--error); border-radius: 6px; }

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createT, I18N, type Lang } from './i18n';
 import { SummaryExtras } from './components/SummaryExtras';
+import { singleShot } from './lib/llm';
 import {
   PROVIDERS, type ProviderId, type HistoryMsg, type SummaryResult,
   getStructuredTurn, stripControlTokens,
@@ -228,6 +229,8 @@ export function App() {
   const [summary, setSummary] = useState<SummaryResult | null>(null);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [generatingSummary, setGeneratingSummary] = useState(false);
+  const [contradictions, setContradictions] = useState<{ earlier: string; current: string; tension: string }[]>([]);
+  const [spellCheck, setSpellCheck] = useState(false);
 
   // Modals & panels
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -524,10 +527,42 @@ export function App() {
   };
 
   const sendUserMessage = useCallback(async () => {
-    const text = draft.trim();
+    let text = draft.trim();
     if (!text || isGenerating || complete) return;
+
+    // Spell-check: opt-in light correction before send
+    if (spellCheck && !closingPhase && text.length > 8) {
+      try {
+        const corrected = await singleShot({
+          systemText: 'Fix obvious spelling and typo errors in the user\'s message. Return ONLY the corrected text — no explanation, no quotes. If the message is already fine, return it unchanged.',
+          userText: text,
+          mockResponse: text,
+        });
+        const c = corrected.trim().replace(/^["']|["']$/g, '');
+        if (c && c !== text && c.length < text.length * 2) text = c;
+      } catch { /* ignore */ }
+    }
+
     appendUser(text, !!closingPhase);
     setDraft('');
+
+    // Contradiction detection (out-of-band, never blocks the interview)
+    if (!closingPhase && history.length > 2) {
+      const transcript = history.filter(m => !m.closing).map(m => `${m.role === 'model' ? 'Q' : 'A'}: ${m.text}`).join('\n');
+      singleShot({
+        systemText: 'Analyze if the participant\'s newest message contradicts something they said earlier. Return ONLY JSON: {"found":boolean,"earlier":"","current":"","tension":""}. Only flag genuine contradictions, not added nuance.',
+        userText: `TRANSCRIPT SO FAR:\n${transcript}\n\nNEW MESSAGE: ${text}`,
+        mockResponse: '{"found":false}',
+      }).then(raw => {
+        try {
+          const cleaned = raw.replace(/```json|```/g, '').trim();
+          const parsed = JSON.parse(cleaned);
+          if (parsed.found && parsed.earlier && parsed.current) {
+            setContradictions(c => [...c, { earlier: parsed.earlier, current: parsed.current, tension: parsed.tension || '' }]);
+          }
+        } catch { /* ignore */ }
+      }).catch(() => { /* ignore */ });
+    }
 
     // Closing q1 (free text) → advance to q2_consent
     if (closingPhase === 'q1') {
@@ -1253,7 +1288,13 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
                   />
                   <button className="btn" onClick={sendUserMessage} disabled={isGenerating} aria-label={t('send')}>{t('send')}</button>
                 </div>
-                <div className="keyhint">{t('keyhint')}</div>
+                <div className="keyhint">
+                  {t('keyhint')}
+                  <label style={{ marginInlineStart: 12, cursor: 'pointer', userSelect: 'none' }}>
+                    <input type="checkbox" checked={spellCheck} onChange={e => setSpellCheck(e.target.checked)} style={{ marginInlineEnd: 4 }} />
+                    {t('spellCheckLabel')}
+                  </label>
+                </div>
               </>
             )}
 
@@ -1349,7 +1390,7 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
                   <h2>{t('actionableInsights')}</h2>
                   <ul>{summary.insights.map((x, i) => <li key={i}>{x}</li>)}</ul>
                 </div>
-                <SummaryExtras history={history} themes={summary.themes || []} lang={lang} />
+                <SummaryExtras history={history} themes={summary.themes || []} insights={summary.insights || []} contradictions={contradictions} lang={lang} />
                 {getClosingResponses().length > 0 && (
                   <div className="summary-section">
                     <h2>{t('closingResponses')}</h2>
