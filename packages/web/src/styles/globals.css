@@ -342,6 +342,26 @@ select option { background: var(--bg); color: var(--text); }
   .app-content { padding: 20px 16px; }
 }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* AI output blocks */
+.ai-output {
+  white-space: pre-wrap;
+  font-family: "SF Mono", "Menlo", Consolas, monospace;
+  font-size: 13.5px; line-height: 1.6;
+  background: var(--card-soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  color: var(--text);
+  margin: 0;
+  max-height: 540px; overflow-y: auto;
+}
+.chip.is-selected {
+  background: linear-gradient(135deg, rgba(16,177,167,0.18), rgba(124,111,247,0.14));
+  border-color: var(--primary, #10B1A7);
+  color: var(--text);
+  font-weight: 600;
+}
 .input-row { position: relative; display: flex; gap: 8px; }
 .input-row input { flex: 1; padding-right: 80px; }
 .input-row .toggle {

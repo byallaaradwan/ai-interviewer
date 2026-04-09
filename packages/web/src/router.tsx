@@ -3,6 +3,9 @@ import { App } from './App';
 import { AppLayout } from './components/AppLayout';
 import { Dashboard } from './pages/Dashboard';
 import { Diagnose } from './pages/Diagnose';
+import { Brainstorm } from './pages/Brainstorm';
+import { EmailGen } from './pages/EmailGen';
+import { Templates } from './pages/Templates';
 import { Placeholder } from './pages/Placeholder';
 import { ParticipantPlaceholder } from './pages/ParticipantPlaceholder';
 
@@ -16,9 +19,10 @@ export function Router() {
         <Route path="/app" element={<AppLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="diagnose" element={<Diagnose />} />
-          <Route path="brainstorm" element={<Placeholder titleKey="navBrainstorm" />} />
+          <Route path="brainstorm" element={<Brainstorm />} />
+          <Route path="email" element={<EmailGen />} />
           <Route path="history" element={<Placeholder titleKey="navHistory" />} />
-          <Route path="templates" element={<Placeholder titleKey="navTemplates" />} />
+          <Route path="templates" element={<Templates />} />
           <Route path="settings" element={<Placeholder titleKey="navSettings" />} />
           <Route path="account" element={<Placeholder titleKey="navAccount" />} />
           <Route path="help" element={<Placeholder titleKey="navHelp" />} />
