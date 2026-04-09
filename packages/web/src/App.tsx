@@ -4,8 +4,107 @@ import {
   PROVIDERS, type ProviderId, type HistoryMsg, type SummaryResult,
   getStructuredTurn, stripControlTokens,
   buildSystemInstruction, generateSummaryCall,
-  DEFAULT_SYSTEM_PROMPT, TOTAL_CORE_QUESTIONS, INDUSTRY_PRESETS,
+  DEFAULT_SYSTEM_PROMPT, TOTAL_CORE_QUESTIONS, INDUSTRY_PRESETS, REGION_PRESETS,
 } from './providers';
+
+// =============== CUSTOM COMBOBOX ===============
+function Combobox(props: {
+  id?: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+  placeholder: string;
+  allowCustom?: boolean;
+  customLabel?: string;
+}) {
+  const { id, value, onChange, options, placeholder, allowCustom = true, customLabel = 'Other…' } = props;
+  const [open, setOpen] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(-1);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const customRef = useRef<HTMLInputElement | null>(null);
+  const isPreset = options.includes(value);
+  const isCustom = !isPreset && value !== '';
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open]);
+
+  const display = isPreset ? value : (isCustom ? `${customLabel}` : '');
+  const items = allowCustom ? [...options, customLabel] : options;
+
+  function pick(opt: string) {
+    if (opt === customLabel) {
+      onChange(' '); // sentinel — non-empty, non-preset
+      setOpen(false);
+      setTimeout(() => customRef.current?.focus(), 30);
+    } else {
+      onChange(opt);
+      setOpen(false);
+    }
+  }
+
+  return (
+    <div className="combobox" ref={wrapRef}>
+      <button
+        id={id}
+        type="button"
+        className="combobox-trigger"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen(o => !o)}
+        onKeyDown={e => {
+          if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setOpen(true);
+            setActiveIdx(0);
+          } else if (e.key === 'Escape') {
+            setOpen(false);
+          }
+        }}
+      >
+        <span className={display ? '' : 'combobox-placeholder'}>{display || placeholder}</span>
+        <svg width="12" height="8" viewBox="0 0 12 8" aria-hidden="true">
+          <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M1 1l5 5 5-5" />
+        </svg>
+      </button>
+      {open && (
+        <div className="combobox-menu" role="listbox">
+          {items.map((opt, i) => {
+            const selected = opt === customLabel ? isCustom : opt === value;
+            return (
+              <div
+                key={opt}
+                role="option"
+                aria-selected={selected}
+                className={`combobox-option ${selected ? 'is-selected' : ''} ${activeIdx === i ? 'is-active' : ''}`}
+                onMouseEnter={() => setActiveIdx(i)}
+                onClick={() => pick(opt)}
+              >
+                {opt}
+                {selected && <span className="combobox-check">✓</span>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {isCustom && (
+        <input
+          ref={customRef}
+          type="text"
+          value={value.trim()}
+          onChange={e => onChange(e.target.value || ' ')}
+          placeholder={placeholder}
+          style={{ marginTop: 8 }}
+        />
+      )}
+    </div>
+  );
+}
 
 // =============== CONSTANTS ===============
 const SESSION_KEY = 'session_v1';
@@ -894,59 +993,94 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
               </div>
             </div>
 
-            <div className="field">
-              <label htmlFor="topic">{t('topicLabel')}</label>
-              <input id="topic" type="text" value={topic} onChange={e => setTopic(e.target.value)} placeholder={t('topicPH')} />
-              <div className="helper">{t('topicHelp')}</div>
-            </div>
-
-            <div className="field">
-              <label htmlFor="audience">{t('audienceLabel')}</label>
-              <input id="audience" type="text" value={audience} onChange={e => setAudience(e.target.value)} placeholder={t('audiencePH')} />
-              <div className="helper">{t('audienceHelp')}</div>
-            </div>
-
-            <div className="field">
-              <label htmlFor="researchGoal">{t('goalLabel')}</label>
-              <input id="researchGoal" type="text" value={researchGoal} onChange={e => setResearchGoal(e.target.value)} placeholder={t('goalPH')} />
-              <div className="helper">{t('goalHelp')}</div>
-            </div>
-
-            <div className="field">
-              <label htmlFor="painPoints">{t('painLabel')}</label>
-              <input id="painPoints" type="text" value={painPoints} onChange={e => setPainPoints(e.target.value)} placeholder={t('painPH')} />
-              <div className="helper">{t('painHelp')}</div>
-            </div>
-
-            <div className="field">
-              <label htmlFor="region">{t('regionLabel')}</label>
-              <input id="region" type="text" value={region} onChange={e => setRegion(e.target.value)} placeholder={t('regionPH')} />
-              <div className="helper">{t('regionHelp')}</div>
-            </div>
-
-            {/* Phase 1a: research context fields */}
+            {/* 1. Company name */}
             <div className="field">
               <label htmlFor="company">{t('companyLabel')}</label>
               <input id="company" type="text" value={company} onChange={e => setCompany(e.target.value)} placeholder={t('companyPH')} />
               <div className="helper">{t('companyHelp')}</div>
             </div>
 
+            {/* 2. Industry / field — dropdown */}
             <div className="field">
               <label htmlFor="industry">{t('industryLabel')}</label>
-              <input
+              <Combobox
                 id="industry"
-                type="text"
-                list="industry-presets"
                 value={industry}
-                onChange={e => setIndustry(e.target.value)}
+                onChange={setIndustry}
+                options={INDUSTRY_PRESETS}
                 placeholder={t('industryCustomPH')}
               />
-              <datalist id="industry-presets">
-                {INDUSTRY_PRESETS.map(p => <option key={p} value={p} />)}
-              </datalist>
               <div className="helper">{t('industryHelp')}</div>
             </div>
 
+            {/* 3. Interview topic / context */}
+            <div className="field">
+              <label htmlFor="topic">{t('topicLabel')}</label>
+              <input id="topic" type="text" value={topic} onChange={e => setTopic(e.target.value)} placeholder={t('topicPH')} />
+              <div className="helper">{t('topicHelp')}</div>
+            </div>
+
+            {/* 4. In scope */}
+            <div className="field">
+              <label htmlFor="scopeIn">{t('scopeInLabel')}</label>
+              <textarea
+                id="scopeIn"
+                value={scopeIn}
+                onChange={e => setScopeIn(e.target.value)}
+                placeholder={t('scopeInPH')}
+                style={{ minHeight: 70 }}
+              />
+              <div className="helper">{t('scopeInHelp')}</div>
+            </div>
+
+            {/* 5. Out of scope */}
+            <div className="field">
+              <label htmlFor="scopeOut">{t('scopeOutLabel')}</label>
+              <textarea
+                id="scopeOut"
+                value={scopeOut}
+                onChange={e => setScopeOut(e.target.value)}
+                placeholder={t('scopeOutPH')}
+                style={{ minHeight: 70 }}
+              />
+              <div className="helper">{t('scopeOutHelp')}</div>
+            </div>
+
+            {/* 6. Target audience */}
+            <div className="field">
+              <label htmlFor="audience">{t('audienceLabel')}</label>
+              <input id="audience" type="text" value={audience} onChange={e => setAudience(e.target.value)} placeholder={t('audiencePH')} />
+              <div className="helper">{t('audienceHelp')}</div>
+            </div>
+
+            {/* 7. Geography / region — dropdown */}
+            <div className="field">
+              <label htmlFor="region">{t('regionLabel')}</label>
+              <Combobox
+                id="region"
+                value={region}
+                onChange={setRegion}
+                options={REGION_PRESETS}
+                placeholder={t('regionPH')}
+              />
+              <div className="helper">{t('regionHelp')}</div>
+            </div>
+
+            {/* 8. Research goal */}
+            <div className="field">
+              <label htmlFor="researchGoal">{t('goalLabel')}</label>
+              <input id="researchGoal" type="text" value={researchGoal} onChange={e => setResearchGoal(e.target.value)} placeholder={t('goalPH')} />
+              <div className="helper">{t('goalHelp')}</div>
+            </div>
+
+            {/* 9. Pain points to explore */}
+            <div className="field">
+              <label htmlFor="painPoints">{t('painLabel')}</label>
+              <input id="painPoints" type="text" value={painPoints} onChange={e => setPainPoints(e.target.value)} placeholder={t('painPH')} />
+              <div className="helper">{t('painHelp')}</div>
+            </div>
+
+            {/* 10. Competitors */}
             <div className="field">
               <label htmlFor="competitors">{t('competitorsLabel')}</label>
               <input
@@ -983,31 +1117,6 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
                 </div>
               )}
               <div className="helper">{t('competitorsHelp')}</div>
-            </div>
-
-            {/* Phase 1a: scope definition */}
-            <div className="field">
-              <label htmlFor="scopeIn">{t('scopeInLabel')}</label>
-              <textarea
-                id="scopeIn"
-                value={scopeIn}
-                onChange={e => setScopeIn(e.target.value)}
-                placeholder={t('scopeInPH')}
-                style={{ minHeight: 70 }}
-              />
-              <div className="helper">{t('scopeInHelp')}</div>
-            </div>
-
-            <div className="field">
-              <label htmlFor="scopeOut">{t('scopeOutLabel')}</label>
-              <textarea
-                id="scopeOut"
-                value={scopeOut}
-                onChange={e => setScopeOut(e.target.value)}
-                placeholder={t('scopeOutPH')}
-                style={{ minHeight: 70 }}
-              />
-              <div className="helper">{t('scopeOutHelp')}</div>
             </div>
 
             <details className="disclosure">
