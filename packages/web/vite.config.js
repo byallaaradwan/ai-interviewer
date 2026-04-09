@@ -1,16 +1,13 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
-// Phase 0a: Vite serves the existing single-file HTML as-is.
-// Phase 0b will introduce React components and a new entry point.
+// Phase 0b: React entry via src/main.tsx
 export default defineConfig({
+  plugins: [react()],
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        main: 'index.html',
-      },
-    },
+    sourcemap: false,
   },
   server: {
     port: 5173,
