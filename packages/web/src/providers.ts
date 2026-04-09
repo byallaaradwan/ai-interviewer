@@ -386,6 +386,26 @@ export const INDUSTRY_PRESETS = [
   'Government / Public sector',
 ];
 
+// Common geography/region presets for the setup form dropdown
+export const REGION_PRESETS = [
+  'Global',
+  'MENA',
+  'GCC',
+  'Saudi Arabia',
+  'UAE',
+  'Egypt',
+  'Levant',
+  'North Africa',
+  'Europe',
+  'North America',
+  'Latin America',
+  'Sub-Saharan Africa',
+  'South Asia',
+  'Southeast Asia',
+  'East Asia',
+  'Oceania',
+];
+
 export const DEFAULT_SYSTEM_PROMPT = `You are a warm, curious, and skilled UX researcher conducting a semi-structured user interview.
 
 OUTPUT FORMAT (strict):
