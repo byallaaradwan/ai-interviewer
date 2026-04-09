@@ -598,13 +598,26 @@ export function App() {
       .map(m => `${m.role === 'model' ? 'Interviewer' : 'Participant'}: ${m.text}`)
       .join('\n\n');
     const langInstr = lang === 'ar' ? '\n\nIMPORTANT: All themes, quote contexts, and insights must be written in Arabic.' : '';
+
+    // Phase 4: tailored analysis based on the interview type chosen on Diagnose page
+    const diagType = (() => { try { return localStorage.getItem('diagnose_type') || ''; } catch { return ''; } })();
+    const tailoring: Record<string, string> = {
+      churn:        '\nTailoring: This is a CHURN interview. Themes should cluster around reasons for leaving; insights should be concrete actions to reduce churn.',
+      usability:    '\nTailoring: This is a USABILITY test. Themes should describe friction points and confusion; insights should be specific UX fixes.',
+      pricing:      '\nTailoring: This is a PRICING study. Themes should describe price perception and value drivers; insights should inform packaging.',
+      discovery:    '\nTailoring: This is a DISCOVERY interview. Themes should describe unmet needs and current behaviours; insights should suggest product directions.',
+      concept:      '\nTailoring: This is a CONCEPT test. Themes should describe reactions to the idea; insights should describe what to keep, drop, or change.',
+      satisfaction: '\nTailoring: This is a SATISFACTION deep-dive. Themes should describe drivers of delight and frustration; insights should describe retention levers.',
+    };
+    const tailor = tailoring[diagType] || '';
+
     const prompt = `Analyze this user interview transcript and produce a JSON object with this exact shape:
 {
   "themes": ["theme 1", "theme 2", ...],
   "quotes": [{"context": "the question that prompted this", "quote": "verbatim user quote"}, ...],
   "insights": ["insight 1", "insight 2", ...]
 }
-Provide 3-5 themes, 3-5 notable quotes, and 3-5 actionable insights for a research/product team.
+Provide 3-5 themes, 3-5 notable quotes, and 3-5 actionable insights for a research/product team.${tailor}
 Output ONLY the JSON object, no markdown fences.${langInstr}
 
 Transcript:
@@ -613,6 +626,19 @@ ${transcript}`;
     try {
       const result = await generateSummaryCall(callCtx, prompt);
       setSummary(result);
+      // Phase 4: persist completed interview to localStorage history
+      try {
+        const HIST_KEY = 'interview_history_v1';
+        const existing = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+        const entry = {
+          id: 'iv_' + Date.now().toString(36),
+          ts: Date.now(),
+          topic, audience, lang, diagType,
+          summary: result,
+          turns: history.filter(m => !m.closing).length,
+        };
+        localStorage.setItem(HIST_KEY, JSON.stringify([entry, ...existing].slice(0, 50)));
+      } catch { /* ignore */ }
     } catch (err: any) {
       console.error('Summary generation failed:', err);
       setSummaryError(err?.message || String(err));

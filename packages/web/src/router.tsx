@@ -6,6 +6,7 @@ import { Diagnose } from './pages/Diagnose';
 import { Brainstorm } from './pages/Brainstorm';
 import { EmailGen } from './pages/EmailGen';
 import { Templates } from './pages/Templates';
+import { History } from './pages/History';
 import { Placeholder } from './pages/Placeholder';
 import { ParticipantPlaceholder } from './pages/ParticipantPlaceholder';
 
@@ -21,7 +22,7 @@ export function Router() {
           <Route path="diagnose" element={<Diagnose />} />
           <Route path="brainstorm" element={<Brainstorm />} />
           <Route path="email" element={<EmailGen />} />
-          <Route path="history" element={<Placeholder titleKey="navHistory" />} />
+          <Route path="history" element={<History />} />
           <Route path="templates" element={<Templates />} />
           <Route path="settings" element={<Placeholder titleKey="navSettings" />} />
           <Route path="account" element={<Placeholder titleKey="navAccount" />} />

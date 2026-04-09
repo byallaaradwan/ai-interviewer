@@ -767,3 +767,22 @@ details.analytics { margin-top: 20px; border-top: 1px solid var(--border); paddi
 
 #confettiCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 200; }
 .hidden { display: none !important; }
+
+.history-list { display: flex; flex-direction: column; gap: 12px; }
+.history-item { padding: 16px; }
+.history-item-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.history-item-title { font-weight: 600; font-size: 1.05rem; color: var(--text); }
+.history-item-meta { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+.history-item-body { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px; }
+.history-item-body h4 { margin: 0 0 6px; font-size: 0.9rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.history-item-body ul { margin: 0; padding-inline-start: 20px; }
+.history-quote { padding: 10px 12px; background: var(--bg); border-inline-start: 3px solid var(--primary); border-radius: 6px; margin-bottom: 8px; }
+.history-quote-ctx { font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+
+.onboarding-hint { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; margin-bottom: 16px; background: var(--primary-soft); border: 1px solid var(--border); border-radius: 10px; }
+.onboarding-hint-icon { font-size: 1.5rem; line-height: 1; }
+.onboarding-hint-body { flex: 1; min-width: 0; }
+.onboarding-hint-body strong { display: block; margin-bottom: 4px; color: var(--text); }
+.onboarding-hint-body p { margin: 0; font-size: 0.9rem; color: var(--muted); }
+.onboarding-hint-close { background: transparent; border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+.onboarding-hint-close:hover { background: var(--card); color: var(--text); }
