@@ -9,6 +9,7 @@ const ITEMS: NavItem[] = [
   { to: '/app/new',        labelKey: 'navNewInterview', icon: '+' },
   { to: '/app/diagnose',   labelKey: 'navDiagnose',   icon: '◎' },
   { to: '/app/brainstorm', labelKey: 'navBrainstorm', icon: '✦' },
+  { to: '/app/email',      labelKey: 'navEmail',      icon: '✉' },
   { to: '/app/history',    labelKey: 'navHistory',    icon: '⌚' },
   { to: '/app/templates',  labelKey: 'navTemplates',  icon: '☰' },
 ];
