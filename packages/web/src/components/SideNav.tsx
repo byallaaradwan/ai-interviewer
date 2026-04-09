@@ -1,6 +1,7 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { createT, type Lang } from '../i18n';
+import { setRole } from '../lib/role';
 
 type NavItem = { to: string; labelKey: string; icon: string; end?: boolean };
 
@@ -22,6 +23,12 @@ const FOOTER: NavItem[] = [
 
 export function SideNav({ lang, onNavigate }: { lang: Lang; onNavigate?: () => void }) {
   const t = createT(lang);
+  const nav = useNavigate();
+  const switchToParticipant = () => {
+    setRole('participant');
+    onNavigate?.();
+    nav('/p');
+  };
   const renderItem = (it: NavItem) => (
     <NavLink
       key={it.to}
@@ -45,6 +52,10 @@ export function SideNav({ lang, onNavigate }: { lang: Lang; onNavigate?: () => v
       </div>
       <div className="sidenav-section">
         {ITEMS.map(renderItem)}
+        <button type="button" className="sidenav-item" onClick={switchToParticipant} style={{ background: 'transparent', border: 'none', textAlign: 'inherit', cursor: 'pointer', font: 'inherit', color: 'inherit', width: '100%' }}>
+          <span className="sidenav-icon" aria-hidden="true">👤</span>
+          <span className="sidenav-label">Switch to participant</span>
+        </button>
       </div>
       <div className="sidenav-footer">
         {FOOTER.map(renderItem)}

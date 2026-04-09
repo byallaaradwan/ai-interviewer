@@ -9,15 +9,29 @@ import { Templates } from './pages/Templates';
 import { History } from './pages/History';
 import { Placeholder } from './pages/Placeholder';
 import { ParticipantPlaceholder } from './pages/ParticipantPlaceholder';
+import { Landing } from './pages/Landing';
+import { ParticipantInbox } from './pages/ParticipantInbox';
+import { getRole } from './lib/role';
+
+function RoleGate({ children, allow }: { children: JSX.Element; allow: 'researcher' | 'participant' }) {
+  const role = getRole();
+  // Participant in interview run is allowed through /app/new even without role=researcher
+  if (allow === 'researcher' && localStorage.getItem('participant_mode') === '1') return children;
+  if (!role) return <Navigate to="/landing" replace />;
+  if (role !== allow) return <Navigate to={role === 'participant' ? '/p' : '/app'} replace />;
+  return children;
+}
 
 export function Router() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/app" replace />} />
-        <Route path="/app/new" element={<App />} />
+        <Route path="/" element={<Navigate to="/landing" replace />} />
+        <Route path="/landing" element={<Landing />} />
+        <Route path="/p" element={<RoleGate allow="participant"><ParticipantInbox /></RoleGate>} />
+        <Route path="/app/new" element={<RoleGate allow="researcher"><App /></RoleGate>} />
         <Route path="/i/:token" element={<ParticipantPlaceholder />} />
-        <Route path="/app" element={<AppLayout />}>
+        <Route path="/app" element={<RoleGate allow="researcher"><AppLayout /></RoleGate>}>
           <Route index element={<Dashboard />} />
           <Route path="diagnose" element={<Diagnose />} />
           <Route path="brainstorm" element={<Brainstorm />} />
@@ -28,7 +42,7 @@ export function Router() {
           <Route path="account" element={<Placeholder titleKey="navAccount" />} />
           <Route path="help" element={<Placeholder titleKey="navHelp" />} />
         </Route>
-        <Route path="*" element={<Navigate to="/app" replace />} />
+        <Route path="*" element={<Navigate to="/landing" replace />} />
       </Routes>
     </BrowserRouter>
   );

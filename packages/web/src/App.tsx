@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { createT, I18N, type Lang } from './i18n';
 import { SummaryExtras } from './components/SummaryExtras';
 import { singleShot } from './lib/llm';
+import { addPending, removePending } from './lib/role';
 import {
   PROVIDERS, type ProviderId, type HistoryMsg, type SummaryResult,
   getStructuredTurn, stripControlTokens,
@@ -281,6 +282,11 @@ export function App() {
 
   // =============== INIT ===============
   useEffect(() => {
+    // Participant mode: skip lang + setup, jump straight to interview
+    if (localStorage.getItem('participant_mode') === '1') {
+      setView('welcome');
+      return;
+    }
     // Initial view
     if (lang) setView('setup');
     else setView('lang');
@@ -633,7 +639,18 @@ export function App() {
     setIsGenerating(true);
     setView('thankyou');
     launchConfetti();
-    setTimeout(() => generateSummary(), 10000);
+    const isParticipant = localStorage.getItem('participant_mode') === '1';
+    setTimeout(() => generateSummary(), isParticipant ? 1500 : 10000);
+    if (isParticipant) {
+      // After summary persists to history, clean up and bounce back to inbox
+      setTimeout(() => {
+        const pid = localStorage.getItem('participant_pending_id');
+        if (pid) removePending(pid);
+        localStorage.removeItem('participant_mode');
+        localStorage.removeItem('participant_pending_id');
+        window.location.href = '/p';
+      }, 8000);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -1255,7 +1272,24 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
               </div>
             </details>
 
-            <button className="btn" onClick={startInterview} disabled={!keyValidated}>{t('startInterview')}</button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button className="btn" onClick={startInterview} disabled={!keyValidated}>{t('startInterview')}</button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  if (!topic.trim()) { alert('Please add a topic first'); return; }
+                  addPending({
+                    id: 'pn_' + Date.now().toString(36),
+                    createdAt: Date.now(),
+                    topic, audience, researchGoal, painPoints, region,
+                    company, industry, competitors, scopeIn, scopeOut,
+                    diagType: localStorage.getItem('diagnose_type') || undefined,
+                  });
+                  alert('Saved! Switch to participant mode to run it.');
+                }}
+              >Save for participant</button>
+            </div>
           </div>
         </div>
       )}
