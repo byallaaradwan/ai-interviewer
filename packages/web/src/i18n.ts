@@ -218,6 +218,15 @@ export const I18N: Record<Lang, Dict> = {
     historyView: "View",
     historyHide: "Hide",
     turnsLabel: "turns",
+    chartsTitle: "Charts",
+    chartSentiment: "Sentiment trend",
+    chartThemes: "Theme frequency",
+    chartLength: "Response length",
+    journeyTitle: "Customer journey map",
+    journeyLoading: "Building journey map…",
+    journeyActions: "Actions",
+    journeyThoughts: "Thoughts",
+    journeyPains: "Pains",
   },
   ar: {
     setupTitle: "إعداد المقابلة",
@@ -434,6 +443,15 @@ export const I18N: Record<Lang, Dict> = {
     historyView: "عرض",
     historyHide: "إخفاء",
     turnsLabel: "أدوار",
+    chartsTitle: "الرسوم البيانية",
+    chartSentiment: "اتجاه المشاعر",
+    chartThemes: "تكرار المواضيع",
+    chartLength: "طول الإجابات",
+    journeyTitle: "خريطة رحلة العميل",
+    journeyLoading: "جارٍ إنشاء الخريطة…",
+    journeyActions: "أفعال",
+    journeyThoughts: "أفكار",
+    journeyPains: "آلام",
   }
 };
 
