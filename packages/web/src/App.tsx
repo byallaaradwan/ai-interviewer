@@ -199,6 +199,11 @@ export function App() {
   const [competitorDraft, setCompetitorDraft] = useState('');
   const [scopeIn, setScopeIn] = useState(() => localStorage.getItem('scopeIn') || '');
   const [scopeOut, setScopeOut] = useState(() => localStorage.getItem('scopeOut') || '');
+  const [demoEnabled, setDemoEnabled] = useState(() => localStorage.getItem('demo_enabled') === '1');
+  const [demoAge, setDemoAge] = useState(() => localStorage.getItem('demo_age') || '');
+  const [demoRole, setDemoRole] = useState(() => localStorage.getItem('demo_role') || '');
+  const [demoExp, setDemoExp] = useState(() => localStorage.getItem('demo_exp') || '');
+  const [demoDevice, setDemoDevice] = useState(() => localStorage.getItem('demo_device') || '');
 
   const [apiKeyVisible, setApiKeyVisible] = useState(false);
   const [apiKeyValidation, setApiKeyValidation] = useState<{ text: string; kind: '' | 'ok' | 'err' }>({ text: '', kind: '' });
@@ -309,6 +314,11 @@ export function App() {
   useEffect(() => { localStorage.setItem('competitors', JSON.stringify(competitors)); }, [competitors]);
   useEffect(() => { localStorage.setItem('scopeIn', scopeIn); }, [scopeIn]);
   useEffect(() => { localStorage.setItem('scopeOut', scopeOut); }, [scopeOut]);
+  useEffect(() => { localStorage.setItem('demo_enabled', demoEnabled ? '1' : '0'); }, [demoEnabled]);
+  useEffect(() => { localStorage.setItem('demo_age', demoAge); }, [demoAge]);
+  useEffect(() => { localStorage.setItem('demo_role', demoRole); }, [demoRole]);
+  useEffect(() => { localStorage.setItem('demo_exp', demoExp); }, [demoExp]);
+  useEffect(() => { localStorage.setItem('demo_device', demoDevice); }, [demoDevice]);
 
   // =============== PERSIST SESSION ===============
   const persistSession = useCallback(() => {
@@ -417,16 +427,27 @@ export function App() {
   };
 
   // =============== CHAT LOGIC ===============
-  const callCtx = useMemo(() => ({
-    providerId: provider,
-    apiKey,
-    systemText: buildSystemInstruction({
+  const callCtx = useMemo(() => {
+    const base = buildSystemInstruction({
       systemPrompt, topic, audience, researchGoal, painPoints, region,
       company, industry, competitors, scopeIn, scopeOut,
       lang: lang || 'en',
-    }),
-    topic,
-  }), [provider, apiKey, systemPrompt, topic, audience, researchGoal, painPoints, region, company, industry, competitors, scopeIn, scopeOut, lang]);
+    });
+    const demoBlock = demoEnabled && (demoAge || demoRole || demoExp || demoDevice)
+      ? `\n\n--- Participant context ---\n${[
+          demoAge && `Age: ${demoAge}`,
+          demoRole && `Role: ${demoRole}`,
+          demoExp && `Experience with topic: ${demoExp}`,
+          demoDevice && `Device preference: ${demoDevice}`,
+        ].filter(Boolean).join('\n')}\n\nUse this context to tailor language and examples; do NOT repeat it back to the participant.`
+      : '';
+    return {
+      providerId: provider,
+      apiKey,
+      systemText: base + demoBlock,
+      topic,
+    };
+  }, [provider, apiKey, systemPrompt, topic, audience, researchGoal, painPoints, region, company, industry, competitors, scopeIn, scopeOut, lang, demoEnabled, demoAge, demoRole, demoExp, demoDevice]);
 
   const appendModel = useCallback((text: string, closing = false) => {
     const ts = Date.now();
@@ -1077,14 +1098,20 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
 
             {/* 3. Interview topic / context */}
             <div className="field">
-              <label htmlFor="topic">{t('topicLabel')}</label>
+              <label htmlFor="topic">
+                {t('topicLabel')}
+                <span className="tip" title={t('tipTopic')} aria-label={t('tipTopic')}> ?</span>
+              </label>
               <input id="topic" type="text" value={topic} onChange={e => setTopic(e.target.value)} placeholder={t('topicPH')} />
               <div className="helper">{t('topicHelp')}</div>
             </div>
 
             {/* 4. In scope */}
             <div className="field">
-              <label htmlFor="scopeIn">{t('scopeInLabel')}</label>
+              <label htmlFor="scopeIn">
+                {t('scopeInLabel')}
+                <span className="tip" title={t('tipScopeIn')} aria-label={t('tipScopeIn')}> ?</span>
+              </label>
               <textarea
                 id="scopeIn"
                 value={scopeIn}
@@ -1097,7 +1124,10 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
 
             {/* 5. Out of scope */}
             <div className="field">
-              <label htmlFor="scopeOut">{t('scopeOutLabel')}</label>
+              <label htmlFor="scopeOut">
+                {t('scopeOutLabel')}
+                <span className="tip" title={t('tipScopeOut')} aria-label={t('tipScopeOut')}> ?</span>
+              </label>
               <textarea
                 id="scopeOut"
                 value={scopeOut}
@@ -1107,6 +1137,37 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
               />
               <div className="helper">{t('scopeOutHelp')}</div>
             </div>
+
+            {/* 5b. Optional demographic screening */}
+            <details className="field" open={demoEnabled}>
+              <summary style={{ cursor: 'pointer', padding: '8px 0', color: 'var(--text)', fontWeight: 500 }}>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer' }} onClick={e => e.stopPropagation()}>
+                  <input type="checkbox" checked={demoEnabled} onChange={e => setDemoEnabled(e.target.checked)} />
+                  {t('demoTitle')}
+                </label>
+              </summary>
+              <div className="helper" style={{ marginBottom: 10 }}>{t('demoHelp')}</div>
+              {demoEnabled && (
+                <div style={{ display: 'grid', gap: 10 }}>
+                  <select value={demoAge} onChange={e => setDemoAge(e.target.value)}>
+                    <option value="">{t('demoAgePH')}</option>
+                    {['18-24','25-34','35-44','45-54','55-64','65+'].map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                  <select value={demoRole} onChange={e => setDemoRole(e.target.value)}>
+                    <option value="">{t('demoRolePH')}</option>
+                    {[t('roleStudent'),t('roleIC'),t('roleManager'),t('roleFounder'),t('roleNotWorking'),t('roleRetired'),t('roleOther')].map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                  <select value={demoExp} onChange={e => setDemoExp(e.target.value)}>
+                    <option value="">{t('demoExpPH')}</option>
+                    {[t('expFirst'),t('expFew'),t('expRegular'),t('expExpert')].map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                  <select value={demoDevice} onChange={e => setDemoDevice(e.target.value)}>
+                    <option value="">{t('demoDevicePH')}</option>
+                    {[t('devMobile'),t('devDesktop'),t('devBoth')].map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </div>
+              )}
+            </details>
 
             {/* 6. Target audience */}
             <div className="field">
