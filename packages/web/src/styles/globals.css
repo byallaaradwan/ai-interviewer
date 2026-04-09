@@ -807,3 +807,6 @@ details.analytics { margin-top: 20px; border-top: 1px solid var(--border); paddi
 
 .audience-bar { display: flex; flex-wrap: wrap; gap: 8px; }
 .contradiction { padding: 12px; margin-bottom: 10px; background: var(--bg); border-inline-start: 3px solid var(--error); border-radius: 6px; }
+
+.tip { display: inline-block; width: 16px; height: 16px; line-height: 16px; text-align: center; border-radius: 50%; background: var(--bg); color: var(--muted); font-size: 0.7rem; margin-inline-start: 6px; cursor: help; border: 1px solid var(--border); }
+.tip:hover { background: var(--primary-soft); color: var(--primary); }
