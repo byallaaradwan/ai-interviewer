@@ -2,9 +2,9 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { createT, I18N, type Lang } from './i18n';
 import {
   PROVIDERS, type ProviderId, type HistoryMsg, type SummaryResult,
-  callProvider, getStructuredTurn, stripControlTokens,
+  getStructuredTurn, stripControlTokens,
   buildSystemInstruction, generateSummaryCall,
-  DEFAULT_SYSTEM_PROMPT, TOTAL_CORE_QUESTIONS,
+  DEFAULT_SYSTEM_PROMPT, TOTAL_CORE_QUESTIONS, INDUSTRY_PRESETS,
 } from './providers';
 
 // =============== CONSTANTS ===============
@@ -89,6 +89,15 @@ export function App() {
   const [researchGoal, setResearchGoal] = useState(() => localStorage.getItem('researchGoal') || '');
   const [painPoints, setPainPoints] = useState(() => localStorage.getItem('painPoints') || '');
   const [region, setRegion] = useState(() => localStorage.getItem('region') || '');
+  // Phase 1a: research context + scope
+  const [company, setCompany] = useState(() => localStorage.getItem('company') || '');
+  const [industry, setIndustry] = useState(() => localStorage.getItem('industry') || '');
+  const [competitors, setCompetitors] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('competitors') || '[]'); } catch { return []; }
+  });
+  const [competitorDraft, setCompetitorDraft] = useState('');
+  const [scopeIn, setScopeIn] = useState(() => localStorage.getItem('scopeIn') || '');
+  const [scopeOut, setScopeOut] = useState(() => localStorage.getItem('scopeOut') || '');
 
   const [apiKeyVisible, setApiKeyVisible] = useState(false);
   const [apiKeyValidation, setApiKeyValidation] = useState<{ text: string; kind: '' | 'ok' | 'err' }>({ text: '', kind: '' });
@@ -192,6 +201,11 @@ export function App() {
   useEffect(() => { localStorage.setItem('researchGoal', researchGoal); }, [researchGoal]);
   useEffect(() => { localStorage.setItem('painPoints', painPoints); }, [painPoints]);
   useEffect(() => { localStorage.setItem('region', region); }, [region]);
+  useEffect(() => { localStorage.setItem('company', company); }, [company]);
+  useEffect(() => { localStorage.setItem('industry', industry); }, [industry]);
+  useEffect(() => { localStorage.setItem('competitors', JSON.stringify(competitors)); }, [competitors]);
+  useEffect(() => { localStorage.setItem('scopeIn', scopeIn); }, [scopeIn]);
+  useEffect(() => { localStorage.setItem('scopeOut', scopeOut); }, [scopeOut]);
 
   // =============== PERSIST SESSION ===============
   const persistSession = useCallback(() => {
@@ -303,9 +317,13 @@ export function App() {
   const callCtx = useMemo(() => ({
     providerId: provider,
     apiKey,
-    systemText: buildSystemInstruction({ systemPrompt, topic, audience, researchGoal, painPoints, region, lang: lang || 'en' }),
+    systemText: buildSystemInstruction({
+      systemPrompt, topic, audience, researchGoal, painPoints, region,
+      company, industry, competitors, scopeIn, scopeOut,
+      lang: lang || 'en',
+    }),
     topic,
-  }), [provider, apiKey, systemPrompt, topic, audience, researchGoal, painPoints, region, lang]);
+  }), [provider, apiKey, systemPrompt, topic, audience, researchGoal, painPoints, region, company, industry, competitors, scopeIn, scopeOut, lang]);
 
   const appendModel = useCallback((text: string, closing = false) => {
     const ts = Date.now();
@@ -573,39 +591,83 @@ ${transcript}`;
     setView('chat');
   }, []);
 
-  // =============== VOICE ===============
+  // =============== VOICE (Phase 1a: continuous + auto-restart) ===============
   const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
   const voiceSupported = !!SR;
+  // User-intent flag separate from the recognizer's `recognizing` state.
+  // We use this to auto-restart if the browser stops the recognizer (~60s limit on Chrome)
+  // while the user still wants to be recording.
+  const voiceActiveRef = useRef(false);
+  const voiceBaseRef = useRef('');
+  const voiceFinalBufferRef = useRef('');
 
-  const toggleVoice = useCallback(() => {
+  const startRecognition = useCallback(() => {
     if (!SR) return;
-    if (recognizing) {
-      recognitionRef.current?.stop();
-      return;
-    }
     try {
       const recognition = new SR();
       recognition.lang = lang === 'ar' ? 'ar-SA' : 'en-US';
       recognition.interimResults = true;
-      recognition.continuous = false;
-      const baseText = draft;
+      recognition.continuous = true; // keep listening between pauses
       recognition.onstart = () => setRecognizing(true);
       recognition.onresult = (evt: any) => {
         let interim = '';
-        let finalText = '';
+        let newFinal = '';
         for (let i = evt.resultIndex; i < evt.results.length; i++) {
           const r = evt.results[i];
-          if (r.isFinal) finalText += r[0].transcript;
+          if (r.isFinal) newFinal += r[0].transcript;
           else interim += r[0].transcript;
         }
-        setDraft((baseText + (baseText ? ' ' : '') + finalText + interim).trim());
+        if (newFinal) {
+          // Accumulate finals across restarts so nothing is lost on auto-resume.
+          voiceFinalBufferRef.current += (voiceFinalBufferRef.current && !voiceFinalBufferRef.current.endsWith(' ') ? ' ' : '') + newFinal;
+        }
+        const combined = voiceBaseRef.current
+          + (voiceBaseRef.current && (voiceFinalBufferRef.current || interim) ? ' ' : '')
+          + voiceFinalBufferRef.current
+          + (voiceFinalBufferRef.current && interim ? ' ' : '')
+          + interim;
+        setDraft(combined.trim());
       };
-      recognition.onerror = (e: any) => console.warn('speech error', e);
-      recognition.onend = () => setRecognizing(false);
+      recognition.onerror = (e: any) => {
+        console.warn('speech error', e);
+        // 'no-speech' and 'aborted' are common non-fatal; let onend handle restart.
+        if (e?.error === 'not-allowed' || e?.error === 'service-not-allowed') {
+          voiceActiveRef.current = false;
+        }
+      };
+      recognition.onend = () => {
+        setRecognizing(false);
+        // If the user still wants to be recording, restart. Chrome SR stops after ~60s.
+        if (voiceActiveRef.current) {
+          // Small defer to avoid Chrome's "recognition already started" race
+          setTimeout(() => {
+            if (voiceActiveRef.current) startRecognition();
+          }, 100);
+        }
+      };
       recognition.start();
       recognitionRef.current = recognition;
-    } catch (e) { console.warn('Speech recognition unavailable', e); }
-  }, [SR, recognizing, lang, draft]);
+    } catch (e) {
+      console.warn('Speech recognition unavailable', e);
+      voiceActiveRef.current = false;
+    }
+  }, [SR, lang]);
+
+  const toggleVoice = useCallback(() => {
+    if (!SR) return;
+    if (voiceActiveRef.current) {
+      // User wants to stop.
+      voiceActiveRef.current = false;
+      try { recognitionRef.current?.stop(); } catch { /* ignore */ }
+      return;
+    }
+    // User wants to start. Capture whatever's currently in the textarea as the base,
+    // reset the accumulated final buffer, then start.
+    voiceBaseRef.current = draft;
+    voiceFinalBufferRef.current = '';
+    voiceActiveRef.current = true;
+    startRecognition();
+  }, [SR, draft, startRecognition]);
 
   // =============== EXPORTS ===============
   const getClosingResponses = useCallback(() => {
@@ -860,6 +922,92 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
               <label htmlFor="region">{t('regionLabel')}</label>
               <input id="region" type="text" value={region} onChange={e => setRegion(e.target.value)} placeholder={t('regionPH')} />
               <div className="helper">{t('regionHelp')}</div>
+            </div>
+
+            {/* Phase 1a: research context fields */}
+            <div className="field">
+              <label htmlFor="company">{t('companyLabel')}</label>
+              <input id="company" type="text" value={company} onChange={e => setCompany(e.target.value)} placeholder={t('companyPH')} />
+              <div className="helper">{t('companyHelp')}</div>
+            </div>
+
+            <div className="field">
+              <label htmlFor="industry">{t('industryLabel')}</label>
+              <input
+                id="industry"
+                type="text"
+                list="industry-presets"
+                value={industry}
+                onChange={e => setIndustry(e.target.value)}
+                placeholder={t('industryCustomPH')}
+              />
+              <datalist id="industry-presets">
+                {INDUSTRY_PRESETS.map(p => <option key={p} value={p} />)}
+              </datalist>
+              <div className="helper">{t('industryHelp')}</div>
+            </div>
+
+            <div className="field">
+              <label htmlFor="competitors">{t('competitorsLabel')}</label>
+              <input
+                id="competitors"
+                type="text"
+                value={competitorDraft}
+                onChange={e => setCompetitorDraft(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const v = competitorDraft.trim();
+                    if (v && !competitors.includes(v)) {
+                      setCompetitors([...competitors, v]);
+                    }
+                    setCompetitorDraft('');
+                  }
+                }}
+                placeholder={t('competitorsPH')}
+              />
+              {competitors.length > 0 && (
+                <div className="chip-row" style={{ justifyContent: 'flex-start', marginTop: 10 }}>
+                  {competitors.map((c, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className="chip"
+                      onClick={() => setCompetitors(competitors.filter((_, idx) => idx !== i))}
+                      title="Click to remove"
+                      style={{ padding: '8px 14px', fontSize: 13 }}
+                    >
+                      {c} ✕
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div className="helper">{t('competitorsHelp')}</div>
+            </div>
+
+            {/* Phase 1a: scope definition */}
+            <div className="field">
+              <label htmlFor="scopeIn">{t('scopeInLabel')}</label>
+              <textarea
+                id="scopeIn"
+                value={scopeIn}
+                onChange={e => setScopeIn(e.target.value)}
+                placeholder={t('scopeInPH')}
+                style={{ minHeight: 70 }}
+              />
+              <div className="helper">{t('scopeInHelp')}</div>
+            </div>
+
+            <div className="field">
+              <label htmlFor="scopeOut">{t('scopeOutLabel')}</label>
+              <textarea
+                id="scopeOut"
+                value={scopeOut}
+                onChange={e => setScopeOut(e.target.value)}
+                placeholder={t('scopeOutPH')}
+                style={{ minHeight: 70 }}
+              />
+              <div className="helper">{t('scopeOutHelp')}</div>
             </div>
 
             <details className="disclosure">

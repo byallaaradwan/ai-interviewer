@@ -320,23 +320,71 @@ export interface InterviewContext {
   researchGoal: string;
   painPoints: string;
   region: string;
+  // Phase 1a additions
+  company?: string;
+  industry?: string;
+  competitors?: string[];
+  scopeIn?: string;
+  scopeOut?: string;
   lang: 'en' | 'ar';
 }
 
 export function buildSystemInstruction(ctx: InterviewContext): string {
   let s = ctx.systemPrompt;
+
+  // --- Research context block (instrumental: tells the AI what to DO with the info) ---
   const items: string[] = [];
   if (ctx.topic) items.push(`Topic: ${ctx.topic}`);
   if (ctx.audience) items.push(`Target audience: ${ctx.audience}`);
   if (ctx.researchGoal) items.push(`Research goal: ${ctx.researchGoal}`);
   if (ctx.painPoints) items.push(`Pain points to explore: ${ctx.painPoints}`);
   if (ctx.region) items.push(`Geography: ${ctx.region}`);
-  if (items.length) s += `\n\n--- Interview context ---\n${items.join('\n')}`;
+  if (ctx.company) items.push(`Company: ${ctx.company}`);
+  if (ctx.industry) items.push(`Industry: ${ctx.industry}`);
+  if (items.length) s += `\n\n--- Research context ---\n${items.join('\n')}`;
+
+  // Competitors get their own instrumental block so the model knows WHAT to do
+  if (ctx.competitors && ctx.competitors.length > 0) {
+    s += `\n\n--- Competitors to watch for ---\n${ctx.competitors.map(c => `- ${c}`).join('\n')}\n\nWhen the participant mentions any of these competitors by name, pay extra attention — this is a natural moment to ask a follow-up about comparison or preference.`;
+  }
+
+  // Scope hard constraint — positive + negative + fallback behavior
+  if (ctx.scopeIn || ctx.scopeOut) {
+    s += `\n\n--- SCOPE (hard constraint) ---`;
+    if (ctx.scopeIn) s += `\nIN SCOPE: ${ctx.scopeIn}`;
+    if (ctx.scopeOut) s += `\nOUT OF SCOPE: ${ctx.scopeOut}`;
+    s += `\n\nRules:\n- If the participant brings up something out of scope, acknowledge it briefly and gently redirect back to what's in scope.\n- Do not ask follow-ups that drift outside scope.\n- If you cannot think of a next_core question within scope, output action="complete" — do NOT invent off-topic questions.`;
+  }
+
   if (ctx.lang === 'ar') {
     s += `\n\nIMPORTANT: Conduct the entire interview in Arabic (العربية). The participant is an Arabic speaker. All "message" fields in your JSON output MUST be in Arabic. Keep "action" values in English ("follow_up", "next_core", "complete").`;
   }
   return s;
 }
+
+// Common industry presets for the setup form combobox
+export const INDUSTRY_PRESETS = [
+  'SaaS / B2B software',
+  'Consumer app',
+  'E-commerce / Retail',
+  'Fintech / Banking',
+  'Healthcare / Medtech',
+  'Education / Edtech',
+  'Media / Publishing',
+  'Gaming',
+  'Travel / Hospitality',
+  'Food delivery',
+  'Mobility / Transport',
+  'Consumer hardware',
+  'Enterprise software',
+  'Developer tools',
+  'AI / ML tools',
+  'Marketplace',
+  'Productivity',
+  'Social / Community',
+  'Non-profit',
+  'Government / Public sector',
+];
 
 export const DEFAULT_SYSTEM_PROMPT = `You are a warm, curious, and skilled UX researcher conducting a semi-structured user interview.
 
