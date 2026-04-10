@@ -1,13 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { readPending, type PendingInterview } from '../lib/role';
+import { readPending, writePending, type PendingInterview } from '../lib/role';
+
+const DEMO_PENDING: PendingInterview[] = [
+  { id: 'dp_1', createdAt: Date.now() - 7200000, topic: 'How do you choose a new productivity app?', audience: 'Knowledge workers aged 25-45', researchGoal: 'Understand app-switching triggers and evaluation criteria', painPoints: 'Feature bloat, poor onboarding', region: '', company: 'Acme Tools', industry: 'SaaS', competitors: ['Notion', 'Todoist'], scopeIn: 'Decision process, daily workflow, frustrations', scopeOut: 'Pricing, enterprise use' },
+  { id: 'dp_2', createdAt: Date.now() - 3600000, topic: 'Recent online shopping experience', audience: 'Frequent online shoppers', researchGoal: 'Identify checkout pain points', painPoints: 'Cart abandonment, trust issues', region: 'MENA', company: '', industry: 'E-commerce', competitors: [], scopeIn: 'Last purchase journey, what almost stopped you', scopeOut: 'Specific product feedback' },
+];
 
 export function ParticipantInbox() {
   const nav = useNavigate();
   const [pending, setPending] = useState<PendingInterview[]>([]);
   const [selected, setSelected] = useState<PendingInterview | null>(null);
 
-  useEffect(() => { setPending(readPending()); }, []);
+  useEffect(() => {
+    let list = readPending();
+    if (list.length === 0) { writePending(DEMO_PENDING); list = DEMO_PENDING; }
+    setPending(list);
+  }, []);
 
   const startInterview = (p: PendingInterview) => {
     localStorage.setItem('topic', p.topic);
@@ -23,7 +32,7 @@ export function ParticipantInbox() {
     if (p.diagType) localStorage.setItem('diagnose_type', p.diagType);
     localStorage.setItem('participant_mode', '1');
     localStorage.setItem('participant_pending_id', p.id);
-    nav('/app/new');
+    nav('/interview');
   };
 
   const fmtDate = (ts: number) => new Date(ts).toLocaleString(undefined, {
