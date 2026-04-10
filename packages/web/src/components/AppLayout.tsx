@@ -1,7 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { SideNav, useSidebarState } from './SideNav';
-import { CoachMark } from './CoachMark';
 import { OnboardingTour, type TourStep } from './OnboardingTour';
 import type { Lang } from '../i18n';
 
@@ -55,28 +54,24 @@ export function AppLayout() {
             ☰
           </button>
           <div className="app-topbar-spacer" />
-          <CoachMark id="lang-toggle" text={lang === 'ar' ? 'تبديل بين الإنجليزية والعربية' : 'Switch between English and Arabic'} position="bottom">
-            <button
-              type="button"
-              className="icon-btn"
-              data-tour="lang-toggle"
-              onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
-              aria-label="Change language"
-            >
-              🌐 {lang === 'en' ? 'EN' : 'ع'}
-            </button>
-          </CoachMark>
-          <CoachMark id="theme-toggle" text={lang === 'ar' ? 'التبديل بين الوضع الفاتح والداكن' : 'Switch between light and dark mode'} position="bottom">
-            <button
-              type="button"
-              className="icon-btn"
-              data-tour="theme-toggle"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              aria-label="Toggle dark mode"
-            >
-              {theme === 'dark' ? '☀' : '🌙'} {theme === 'dark' ? 'Light' : 'Dark'}
-            </button>
-          </CoachMark>
+          <button
+            type="button"
+            className="icon-btn"
+            data-tour="lang-toggle"
+            onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+            aria-label="Change language"
+          >
+            🌐 {lang === 'en' ? 'EN' : 'ع'}
+          </button>
+          <button
+            type="button"
+            className="icon-btn"
+            data-tour="theme-toggle"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label="Toggle dark mode"
+          >
+            {theme === 'dark' ? '☀' : '🌙'} {theme === 'dark' ? 'Light' : 'Dark'}
+          </button>
         </header>
         <div className="app-content">
           <Outlet context={{ lang, setLang, theme, setTheme }} />
