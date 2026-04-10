@@ -267,6 +267,7 @@ export const I18N: Record<Lang, Dict> = {
     tipTopic: "What you're researching, in one sentence. The AI uses this as the north star for every question.",
     tipScopeIn: "Be specific about what you want to explore. The AI keeps follow-ups inside this boundary.",
     tipScopeOut: "List anything off-limits. The AI will redirect gently if the participant drifts here.",
+    voiceTip: "You can use the microphone button next to the text box to speak your answers instead of typing.",
   },
   ar: {
     setupTitle: "إعداد المقابلة",
@@ -532,6 +533,7 @@ export const I18N: Record<Lang, Dict> = {
     tipTopic: "ما الذي تبحث فيه، في جملة واحدة. يستخدمه الذكاء الاصطناعي كنجم شمالي.",
     tipScopeIn: "كن محددًا فيما تريد استكشافه. ستبقى أسئلة المتابعة داخل هذا النطاق.",
     tipScopeOut: "ما الذي يجب تجنبه. سيقوم الذكاء الاصطناعي بإعادة التوجيه بلطف.",
+    voiceTip: "يمكنك استخدام زر الميكروفون بجوار مربع النص للتحدث بدلاً من الكتابة.",
   }
 };
 

@@ -1307,6 +1307,15 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
               <p>{t('welcomeLine2')}</p>
               <p>{t('welcomeLine3')}</p>
             </div>
+            {voiceSupported && (
+              <div className="voice-tip">
+                <svg viewBox="0 0 24 24" width="18" height="18" style={{ flexShrink: 0 }}>
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" fill="var(--primary)" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+                <span>{t('voiceTip')}</span>
+              </div>
+            )}
             <button className="btn" onClick={() => { setView('chat'); beginInterview(); }}>{t('beginInterview')}</button>
           </div>
         </div>
@@ -1351,21 +1360,6 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
             {closingPhase !== 'done' && !chipQuestion && !otherInputOpen && (
               <>
                 <div className="input-row-chat">
-                  {voiceSupported && (
-                    <button
-                      type="button"
-                      className={`mic-btn ${recognizing ? 'recording' : ''}`}
-                      onClick={toggleVoice}
-                      aria-label="Toggle voice input"
-                      aria-pressed={recognizing}
-                      title={recognizing ? t('micListening') : t('micStart')}
-                    >
-                      <svg viewBox="0 0 24 24">
-                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" fill="currentColor" />
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                      </svg>
-                    </button>
-                  )}
                   <textarea
                     ref={chatInputRef}
                     rows={1}
@@ -1382,6 +1376,21 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
                     disabled={isGenerating}
                   />
                   <button className="btn" onClick={sendUserMessage} disabled={isGenerating} aria-label={t('send')}>{t('send')}</button>
+                  {voiceSupported && (
+                    <button
+                      type="button"
+                      className={`mic-btn ${recognizing ? 'recording' : ''}`}
+                      onClick={toggleVoice}
+                      aria-label="Toggle voice input"
+                      aria-pressed={recognizing}
+                      title={recognizing ? t('micListening') : t('micStart')}
+                    >
+                      <svg viewBox="0 0 24 24">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" fill="currentColor" />
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
                 <div className="keyhint">
                   {t('keyhint')}
