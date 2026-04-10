@@ -10,7 +10,7 @@ const RESEARCHER_TOUR: TourStep[] = [
   { target: '[data-tour="nav-diagnose"]', text: 'Not sure what kind of interview to run? Describe your problem and get a recommendation.', position: 'right' },
   { target: '[data-tour="nav-brainstorm"]', text: 'Test and refine your interview questions before going live. AI will critique and improve them.', position: 'right' },
   { target: '[data-tour="nav-history"]', text: 'All your past interviews are saved here. Export or review them any time.', position: 'right' },
-  { target: '[data-tour="lang-toggle"]', text: 'Switch between English and Arabic. The entire interface flips to RTL automatically.', position: 'bottom' },
+  { target: '[data-tour="lang-toggle"]', text: 'Switch between English and Arabic. The entire interface adjusts automatically.', position: 'bottom' },
   { target: '[data-tour="theme-toggle"]', text: 'Toggle between light and dark mode. Your preference is remembered.', position: 'bottom' },
 ];
 
