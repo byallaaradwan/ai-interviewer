@@ -3,6 +3,7 @@ import { createT, I18N, type Lang } from './i18n';
 import { SummaryExtras } from './components/SummaryExtras';
 import { singleShot } from './lib/llm';
 import { addPending, removePending } from './lib/role';
+import { CoachMark } from './components/CoachMark';
 import {
   PROVIDERS, type ProviderId, type HistoryMsg, type SummaryResult,
   getStructuredTurn, stripControlTokens,
@@ -1274,6 +1275,7 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
 
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button className="btn" onClick={startInterview} disabled={!keyValidated}>{t('startInterview')}</button>
+              <CoachMark id="save-participant" text={t('coachSaveParticipant')} position="top">
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -1289,6 +1291,7 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
                   alert('Saved! Switch to participant mode to run it.');
                 }}
               >Save for participant</button>
+              </CoachMark>
             </div>
           </div>
         </div>
@@ -1377,27 +1380,31 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
                   />
                   <button className="btn" onClick={sendUserMessage} disabled={isGenerating} aria-label={t('send')}>{t('send')}</button>
                   {voiceSupported && (
-                    <button
-                      type="button"
-                      className={`mic-btn ${recognizing ? 'recording' : ''}`}
-                      onClick={toggleVoice}
-                      aria-label="Toggle voice input"
-                      aria-pressed={recognizing}
-                      title={recognizing ? t('micListening') : t('micStart')}
-                    >
-                      <svg viewBox="0 0 24 24">
-                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" fill="currentColor" />
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                      </svg>
-                    </button>
+                    <CoachMark id="mic" text={t('coachMic')} position="top">
+                      <button
+                        type="button"
+                        className={`mic-btn ${recognizing ? 'recording' : ''}`}
+                        onClick={toggleVoice}
+                        aria-label="Toggle voice input"
+                        aria-pressed={recognizing}
+                        title={recognizing ? t('micListening') : t('micStart')}
+                      >
+                        <svg viewBox="0 0 24 24">
+                          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" fill="currentColor" />
+                          <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3M8 22h8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                    </CoachMark>
                   )}
                 </div>
                 <div className="keyhint">
                   {t('keyhint')}
-                  <label style={{ marginInlineStart: 12, cursor: 'pointer', userSelect: 'none' }}>
-                    <input type="checkbox" checked={spellCheck} onChange={e => setSpellCheck(e.target.checked)} style={{ marginInlineEnd: 4 }} />
-                    {t('spellCheckLabel')}
-                  </label>
+                  <CoachMark id="spellcheck" text={t('coachSpellCheck')} position="top">
+                    <label style={{ marginInlineStart: 12, cursor: 'pointer', userSelect: 'none' }}>
+                      <input type="checkbox" checked={spellCheck} onChange={e => setSpellCheck(e.target.checked)} style={{ marginInlineEnd: 4 }} />
+                      {t('spellCheckLabel')}
+                    </label>
+                  </CoachMark>
                 </div>
               </>
             )}
