@@ -648,7 +648,7 @@ export function App() {
         if (pid) removePending(pid);
         localStorage.removeItem('participant_mode');
         localStorage.removeItem('participant_pending_id');
-        window.location.href = '/p';
+        window.location.href = '/p/inbox';
       }, 8000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
