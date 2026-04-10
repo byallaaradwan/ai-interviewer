@@ -19,7 +19,7 @@ import { getRole } from './lib/role';
 
 function RoleGate({ children, allow }: { children: JSX.Element; allow: 'researcher' | 'participant' }) {
   const role = getRole();
-  if (allow === 'researcher' && localStorage.getItem('participant_mode') === '1') return children;
+  // participant_mode handled by dedicated /interview route
   if (!role) return <Navigate to="/landing" replace />;
   if (role !== allow) return <Navigate to={role === 'participant' ? '/p' : '/app'} replace />;
   return children;
@@ -31,10 +31,11 @@ export function Router() {
       <Routes>
         <Route path="/" element={<Navigate to="/landing" replace />} />
         <Route path="/landing" element={<Landing />} />
-        <Route path="/app/new" element={<RoleGate allow="researcher"><App /></RoleGate>} />
         <Route path="/i/:token" element={<ParticipantPlaceholder />} />
+        <Route path="/interview" element={<App />} />
         <Route path="/app" element={<RoleGate allow="researcher"><AppLayout /></RoleGate>}>
           <Route index element={<Dashboard />} />
+          <Route path="new" element={<App />} />
           <Route path="diagnose" element={<Diagnose />} />
           <Route path="brainstorm" element={<Brainstorm />} />
           <Route path="email" element={<EmailGen />} />

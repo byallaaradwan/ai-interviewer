@@ -10,8 +10,22 @@ type HistoryEntry = {
 
 const HIST_KEY = 'interview_history_v1';
 
+const DEMO_HISTORY: HistoryEntry[] = [
+  { id: 'demo_1', ts: Date.now() - 86400000 * 6, topic: 'Podcast discovery habits', turns: 8, summary: { themes: ['Search friction', 'Word of mouth', 'Algorithm fatigue', 'Playlist curation'] } },
+  { id: 'demo_2', ts: Date.now() - 86400000 * 4, topic: 'Onboarding experience review', turns: 12, summary: { themes: ['Confusing first steps', 'Too many options', 'Missing progress indicator'] } },
+  { id: 'demo_3', ts: Date.now() - 86400000 * 3, topic: 'Mobile checkout friction', turns: 6, summary: { themes: ['Payment trust', 'Form length', 'Guest checkout preference', 'Error messages'] } },
+  { id: 'demo_4', ts: Date.now() - 86400000 * 1, topic: 'Feature prioritization feedback', turns: 10, summary: { themes: ['Collaboration tools', 'Export options', 'Integration needs', 'Pricing clarity', 'Dark mode demand'] } },
+  { id: 'demo_5', ts: Date.now() - 3600000, topic: 'Customer support satisfaction', turns: 7, summary: { themes: ['Response time', 'Channel preference', 'Self-service gaps'] } },
+];
+
 function readHistory(): HistoryEntry[] {
-  try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); } catch { return []; }
+  try {
+    const stored = JSON.parse(localStorage.getItem(HIST_KEY) || '[]');
+    if (stored.length > 0) return stored;
+    // Seed demo data on first visit
+    localStorage.setItem(HIST_KEY, JSON.stringify(DEMO_HISTORY));
+    return DEMO_HISTORY;
+  } catch { return DEMO_HISTORY; }
 }
 
 export function ParticipantDashboard() {
