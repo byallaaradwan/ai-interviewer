@@ -268,6 +268,9 @@ export const I18N: Record<Lang, Dict> = {
     tipScopeIn: "Be specific about what you want to explore. The AI keeps follow-ups inside this boundary.",
     tipScopeOut: "List anything off-limits. The AI will redirect gently if the participant drifts here.",
     voiceTip: "You can use the microphone button next to the text box to speak your answers instead of typing.",
+    coachMic: "Tap to speak your answer instead of typing. Tap again to stop.",
+    coachSpellCheck: "Enable to auto-correct typos before sending your message.",
+    coachSaveParticipant: "Save this interview for a participant to complete. Switch to participant mode to try it.",
   },
   ar: {
     setupTitle: "إعداد المقابلة",
@@ -534,6 +537,9 @@ export const I18N: Record<Lang, Dict> = {
     tipScopeIn: "كن محددًا فيما تريد استكشافه. ستبقى أسئلة المتابعة داخل هذا النطاق.",
     tipScopeOut: "ما الذي يجب تجنبه. سيقوم الذكاء الاصطناعي بإعادة التوجيه بلطف.",
     voiceTip: "يمكنك استخدام زر الميكروفون بجوار مربع النص للتحدث بدلاً من الكتابة.",
+    coachMic: "اضغط للتحدث بدلاً من الكتابة. اضغط مرة أخرى للإيقاف.",
+    coachSpellCheck: "فعّل لتصحيح الأخطاء تلقائيًا قبل الإرسال.",
+    coachSaveParticipant: "احفظ هذه المقابلة ليقوم مشارك بإكمالها. انتقل إلى وضع المشارك لتجربتها.",
   }
 };
 

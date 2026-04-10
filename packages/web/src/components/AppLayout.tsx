@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { SideNav, useSidebarState } from './SideNav';
+import { CoachMark } from './CoachMark';
 import type { Lang } from '../i18n';
 
 function readLang(): Lang {
@@ -49,22 +50,26 @@ export function AppLayout() {
             ☰
           </button>
           <div className="app-topbar-spacer" />
-          <button
-            type="button"
-            className="icon-btn"
-            onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
-            aria-label="Change language"
-          >
-            🌐 {lang === 'en' ? 'EN' : 'ع'}
-          </button>
-          <button
-            type="button"
-            className="icon-btn"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label="Toggle dark mode"
-          >
-            {theme === 'dark' ? '☀' : '🌙'} {theme === 'dark' ? 'Light' : 'Dark'}
-          </button>
+          <CoachMark id="lang-toggle" text={lang === 'ar' ? 'تبديل بين الإنجليزية والعربية' : 'Switch between English and Arabic'} position="bottom">
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+              aria-label="Change language"
+            >
+              🌐 {lang === 'en' ? 'EN' : 'ع'}
+            </button>
+          </CoachMark>
+          <CoachMark id="theme-toggle" text={lang === 'ar' ? 'التبديل بين الوضع الفاتح والداكن' : 'Switch between light and dark mode'} position="bottom">
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              aria-label="Toggle dark mode"
+            >
+              {theme === 'dark' ? '☀' : '🌙'} {theme === 'dark' ? 'Light' : 'Dark'}
+            </button>
+          </CoachMark>
         </header>
         <div className="app-content">
           {showOnboarding && (
