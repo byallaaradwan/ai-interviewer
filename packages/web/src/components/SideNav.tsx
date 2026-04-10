@@ -3,15 +3,15 @@ import { useEffect, useState } from 'react';
 import { createT, type Lang } from '../i18n';
 import { setRole } from '../lib/role';
 
-type NavItem = { to: string; labelKey: string; icon: string; end?: boolean };
+type NavItem = { to: string; labelKey: string; icon: string; end?: boolean; tourId?: string };
 
 const ITEMS: NavItem[] = [
-  { to: '/app',            labelKey: 'navDashboard',  icon: '◉', end: true },
-  { to: '/app/new',        labelKey: 'navNewInterview', icon: '＋' },
-  { to: '/app/diagnose',   labelKey: 'navDiagnose',   icon: '◎' },
-  { to: '/app/brainstorm', labelKey: 'navBrainstorm', icon: '✦' },
+  { to: '/app',            labelKey: 'navDashboard',  icon: '◉', end: true, tourId: 'nav-dashboard' },
+  { to: '/app/new',        labelKey: 'navNewInterview', icon: '＋', tourId: 'nav-new' },
+  { to: '/app/diagnose',   labelKey: 'navDiagnose',   icon: '◎', tourId: 'nav-diagnose' },
+  { to: '/app/brainstorm', labelKey: 'navBrainstorm', icon: '✦', tourId: 'nav-brainstorm' },
   { to: '/app/email',      labelKey: 'navEmail',      icon: '✉' },
-  { to: '/app/history',    labelKey: 'navHistory',    icon: '↻' },
+  { to: '/app/history',    labelKey: 'navHistory',    icon: '↻', tourId: 'nav-history' },
   { to: '/app/templates',  labelKey: 'navTemplates',  icon: '▤' },
 ];
 
@@ -36,6 +36,7 @@ export function SideNav({ lang, onNavigate }: { lang: Lang; onNavigate?: () => v
       end={it.end}
       onClick={onNavigate}
       className={({ isActive }) => `sidenav-item ${isActive ? 'is-active' : ''}`}
+      {...(it.tourId ? { 'data-tour': it.tourId } : {})}
     >
       <span className="sidenav-icon" aria-hidden="true">{it.icon}</span>
       <span className="sidenav-label">{t(it.labelKey)}</span>
@@ -43,7 +44,7 @@ export function SideNav({ lang, onNavigate }: { lang: Lang; onNavigate?: () => v
   );
 
   return (
-    <nav className="sidenav" aria-label="Main">
+    <nav className="sidenav" aria-label="Main" data-tour="sidenav">
       <div className="sidenav-header">
         <NavLink to="/app" className="sidenav-brand" onClick={onNavigate}>
           <span className="sidenav-brand-mark">AI</span>
