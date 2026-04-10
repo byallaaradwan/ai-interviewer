@@ -179,6 +179,9 @@ function launchConfetti() {
 
 // =============== APP ===============
 export function App() {
+  // When rendered inside AppLayout (at /app/new), hide own topbar to avoid duplication
+  const insideLayout = window.location.pathname.startsWith('/app/');
+
   // -------- core state --------
   const [lang, setLang] = useState<Lang | null>(() => (localStorage.getItem('lang') as Lang) || null);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -294,8 +297,8 @@ export function App() {
       setView('welcome');
       return;
     }
-    // Initial view
-    if (lang) setView('setup');
+    // Initial view — skip lang selection when inside AppLayout (it handles lang)
+    if (lang || insideLayout) setView('setup');
     else setView('lang');
 
     // Initial key validation — if we have a stored key AND the stored provider is not demo
@@ -1000,36 +1003,38 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
 
   return (
     <div className="app">
-      <div className="topbar">
-        <div className="brand">
-          <div className="brand-emblem">
-            <svg viewBox="0 0 24 24">
-              <path d="M7 11a5 5 0 0 1 10 0v3l2 3H5l2-3v-3z" fill="white" />
-            </svg>
+      {!insideLayout && (
+        <div className="topbar">
+          <div className="brand">
+            <div className="brand-emblem">
+              <svg viewBox="0 0 24 24">
+                <path d="M7 11a5 5 0 0 1 10 0v3l2 3H5l2-3v-3z" fill="white" />
+              </svg>
+            </div>
+            <span className="brand-label">AI Interviewer</span>
           </div>
-          <span className="brand-label">AI Interviewer</span>
+          <div className="row">
+            {view === 'chat' && (
+              <button className="icon-btn danger" onClick={() => setQuitModalOpen(true)} aria-label={t('quit')}>
+                ✕ {t('quit')}
+              </button>
+            )}
+            {view === 'chat' && (
+              <button className="icon-btn" onClick={() => { setSystemPromptDraft(systemPrompt); setSettingsOpen(true); }} aria-label={t('settings')}>
+                ⚙ {t('settings')}
+              </button>
+            )}
+            {view !== 'lang' && (
+              <button className="icon-btn" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} aria-label="Change language">
+                🌐 {lang === 'ar' ? 'AR' : 'EN'}
+              </button>
+            )}
+            <button className="icon-btn" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle dark mode">
+              {theme === 'dark' ? '☀' : '🌙'}
+            </button>
+          </div>
         </div>
-        <div className="row">
-          {view === 'chat' && (
-            <button className="icon-btn danger" onClick={() => setQuitModalOpen(true)} aria-label={t('quit')}>
-              ✕ {t('quit')}
-            </button>
-          )}
-          {view === 'chat' && (
-            <button className="icon-btn" onClick={() => { setSystemPromptDraft(systemPrompt); setSettingsOpen(true); }} aria-label={t('settings')}>
-              ⚙ {t('settings')}
-            </button>
-          )}
-          {view !== 'lang' && (
-            <button className="icon-btn" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} aria-label="Change language">
-              🌐 {lang === 'ar' ? 'AR' : 'EN'}
-            </button>
-          )}
-          <button className="icon-btn" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle dark mode">
-            {theme === 'dark' ? '☀' : '🌙'}
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* LANG VIEW */}
       {view === 'lang' && (
