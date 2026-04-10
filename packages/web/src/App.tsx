@@ -4,6 +4,12 @@ import { SummaryExtras } from './components/SummaryExtras';
 import { singleShot } from './lib/llm';
 import { addPending, removePending } from './lib/role';
 import { CoachMark } from './components/CoachMark';
+import { OnboardingTour, type TourStep } from './components/OnboardingTour';
+
+const CHAT_TOUR: TourStep[] = [
+  { target: '[data-tour="chat-input"]', text: 'Type your answer here and press Enter or click Send. The AI interviewer will guide you through the conversation.', position: 'top' },
+  { target: '[data-tour="mic-btn"]', text: 'Prefer talking? Tap the mic button to use voice input. Tap again to stop recording.', position: 'top' },
+];
 import {
   PROVIDERS, type ProviderId, type HistoryMsg, type SummaryResult,
   getStructuredTurn, stripControlTokens,
@@ -1362,7 +1368,7 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
           <div className="input-area">
             {closingPhase !== 'done' && !chipQuestion && !otherInputOpen && (
               <>
-                <div className="input-row-chat">
+                <div className="input-row-chat" data-tour="chat-input">
                   <textarea
                     ref={chatInputRef}
                     rows={1}
@@ -1384,6 +1390,7 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
                       <button
                         type="button"
                         className={`mic-btn ${recognizing ? 'recording' : ''}`}
+                        data-tour="mic-btn"
                         onClick={toggleVoice}
                         aria-label="Toggle voice input"
                         aria-pressed={recognizing}
@@ -1444,6 +1451,7 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
               </div>
             )}
           </div>
+          <OnboardingTour id="chat" steps={CHAT_TOUR} />
         </div>
       )}
 

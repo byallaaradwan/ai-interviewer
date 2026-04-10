@@ -2,7 +2,18 @@ import { Outlet } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { SideNav, useSidebarState } from './SideNav';
 import { CoachMark } from './CoachMark';
+import { OnboardingTour, type TourStep } from './OnboardingTour';
 import type { Lang } from '../i18n';
+
+const RESEARCHER_TOUR: TourStep[] = [
+  { target: '[data-tour="sidenav"]', text: 'This is your main navigation. All your tools live here — interviews, brainstorming, history, and more.', position: 'right' },
+  { target: '[data-tour="nav-new"]', text: 'Start here to create a new interview. Set up your topic, audience, and scope.', position: 'right' },
+  { target: '[data-tour="nav-diagnose"]', text: 'Not sure what kind of interview to run? Describe your problem and get a recommendation.', position: 'right' },
+  { target: '[data-tour="nav-brainstorm"]', text: 'Test and refine your interview questions before going live. AI will critique and improve them.', position: 'right' },
+  { target: '[data-tour="nav-history"]', text: 'All your past interviews are saved here. Export or review them any time.', position: 'right' },
+  { target: '[data-tour="lang-toggle"]', text: 'Switch between English and Arabic. The entire interface flips to RTL automatically.', position: 'bottom' },
+  { target: '[data-tour="theme-toggle"]', text: 'Toggle between light and dark mode. Your preference is remembered.', position: 'bottom' },
+];
 
 function readLang(): Lang {
   const v = localStorage.getItem('lang');
@@ -19,13 +30,7 @@ export function AppLayout() {
   const [lang, setLang] = useState<Lang>(readLang);
   const [theme, setTheme] = useState<'light' | 'dark'>(readTheme);
   const sidebar = useSidebarState();
-  const [showOnboarding, setShowOnboarding] = useState(() => {
-    try { return !localStorage.getItem('onboarding_dismissed_v1'); } catch { return false; }
-  });
-  const dismissOnboarding = () => {
-    try { localStorage.setItem('onboarding_dismissed_v1', '1'); } catch { /* ignore */ }
-    setShowOnboarding(false);
-  };
+  const [tourDone, setTourDone] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -54,6 +59,7 @@ export function AppLayout() {
             <button
               type="button"
               className="icon-btn"
+              data-tour="lang-toggle"
               onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
               aria-label="Change language"
             >
@@ -64,6 +70,7 @@ export function AppLayout() {
             <button
               type="button"
               className="icon-btn"
+              data-tour="theme-toggle"
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               aria-label="Toggle dark mode"
             >
@@ -72,22 +79,9 @@ export function AppLayout() {
           </CoachMark>
         </header>
         <div className="app-content">
-          {showOnboarding && (
-            <div className="onboarding-hint" role="status">
-              <div className="onboarding-hint-icon" aria-hidden="true">👋</div>
-              <div className="onboarding-hint-body">
-                <strong>{lang === 'ar' ? 'مرحبًا بك في AI Interviewer' : 'Welcome to AI Interviewer'}</strong>
-                <p>
-                  {lang === 'ar'
-                    ? 'ابدأ من "تشخيص المشكلة" لمعرفة أفضل نوع مقابلة، ثم "مقابلة جديدة" لإجراء جلستك. كل شيء يعمل في وضع العرض بدون مفتاح API.'
-                    : 'Start at Diagnose problem to find the right interview type, then New interview to run a session. Demo mode works without an API key.'}
-                </p>
-              </div>
-              <button type="button" className="onboarding-hint-close" onClick={dismissOnboarding} aria-label="Dismiss">✕</button>
-            </div>
-          )}
           <Outlet context={{ lang, setLang, theme, setTheme }} />
         </div>
+        {!tourDone && <OnboardingTour id="researcher" steps={RESEARCHER_TOUR} onDone={() => setTourDone(true)} />}
       </div>
     </div>
   );

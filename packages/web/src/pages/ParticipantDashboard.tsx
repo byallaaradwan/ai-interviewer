@@ -11,11 +11,12 @@ type HistoryEntry = {
 const HIST_KEY = 'interview_history_v1';
 
 const DEMO_HISTORY: HistoryEntry[] = [
-  { id: 'demo_1', ts: Date.now() - 86400000 * 6, topic: 'Podcast discovery habits', turns: 8, summary: { themes: ['Search friction', 'Word of mouth', 'Algorithm fatigue', 'Playlist curation'] } },
-  { id: 'demo_2', ts: Date.now() - 86400000 * 4, topic: 'Onboarding experience review', turns: 12, summary: { themes: ['Confusing first steps', 'Too many options', 'Missing progress indicator'] } },
-  { id: 'demo_3', ts: Date.now() - 86400000 * 3, topic: 'Mobile checkout friction', turns: 6, summary: { themes: ['Payment trust', 'Form length', 'Guest checkout preference', 'Error messages'] } },
-  { id: 'demo_4', ts: Date.now() - 86400000 * 1, topic: 'Feature prioritization feedback', turns: 10, summary: { themes: ['Collaboration tools', 'Export options', 'Integration needs', 'Pricing clarity', 'Dark mode demand'] } },
-  { id: 'demo_5', ts: Date.now() - 3600000, topic: 'Customer support satisfaction', turns: 7, summary: { themes: ['Response time', 'Channel preference', 'Self-service gaps'] } },
+  // Theme counts: Search friction=5, Trust concerns=4, Confusing UX=3, Slow response=2, Feature gaps=1 — all unique
+  { id: 'demo_1', ts: Date.now() - 86400000 * 6, topic: 'Podcast discovery habits', turns: 9, summary: { themes: ['Search friction', 'Trust concerns', 'Confusing UX', 'Feature gaps'] } },
+  { id: 'demo_2', ts: Date.now() - 86400000 * 4, topic: 'Onboarding experience review', turns: 14, summary: { themes: ['Confusing UX', 'Search friction', 'Trust concerns', 'Slow response'] } },
+  { id: 'demo_3', ts: Date.now() - 86400000 * 3, topic: 'Mobile checkout friction', turns: 6, summary: { themes: ['Trust concerns', 'Search friction', 'Slow response'] } },
+  { id: 'demo_4', ts: Date.now() - 86400000 * 1, topic: 'Feature prioritization feedback', turns: 11, summary: { themes: ['Search friction', 'Trust concerns', 'Confusing UX'] } },
+  { id: 'demo_5', ts: Date.now() - 3600000, topic: 'Customer support satisfaction', turns: 8, summary: { themes: ['Search friction'] } },
 ];
 
 function readHistory(): HistoryEntry[] {

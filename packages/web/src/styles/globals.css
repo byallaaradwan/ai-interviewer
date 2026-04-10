@@ -829,3 +829,39 @@ details.analytics { margin-top: 20px; border-top: 1px solid var(--border); paddi
 .coach-text { flex: 1; }
 .coach-close { background: transparent; border: none; color: inherit; cursor: pointer; font-size: 0.7rem; padding: 0 2px; opacity: 0.7; flex-shrink: 0; }
 .coach-close:hover { opacity: 1; }
+
+/* ── Onboarding Tour ── */
+.tour-overlay { position: fixed; inset: 0; z-index: 9000; }
+.tour-backdrop { position: fixed; inset: 0; z-index: 9001; pointer-events: auto; }
+.tour-spotlight {
+  position: fixed; z-index: 9002; border-radius: 10px;
+  box-shadow: 0 0 0 3px var(--primary), 0 0 16px rgba(16,177,167,0.35);
+  pointer-events: none; transition: all 0.3s ease;
+}
+.tour-bubble {
+  position: fixed; z-index: 9003; width: 300px; max-width: calc(100vw - 32px);
+  background: var(--card); color: var(--text); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow-lg);
+  animation: tour-in 0.3s ease-out;
+}
+@keyframes tour-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.tour-step-badge {
+  display: inline-block; font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--primary); margin-bottom: 8px;
+}
+.tour-text { margin: 0 0 14px; font-size: 0.92rem; line-height: 1.5; color: var(--text); }
+.tour-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tour-skip {
+  background: transparent; border: none; color: var(--muted); font-size: 0.82rem;
+  cursor: pointer; padding: 4px 8px; border-radius: 6px;
+}
+.tour-skip:hover { color: var(--text); background: var(--card-soft); }
+.tour-nav { display: flex; gap: 6px; }
+.tour-btn {
+  padding: 6px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border); background: var(--card-soft); color: var(--text);
+  transition: all 0.15s ease;
+}
+.tour-btn:hover { background: var(--primary-soft); border-color: var(--primary); }
+.tour-next { background: var(--primary); color: #fff; border-color: var(--primary); }
+.tour-next:hover { background: var(--primary-dark); border-color: var(--primary-dark); }

@@ -2,13 +2,13 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { setRole, PASSCODE } from '../lib/role';
 
-type NavItem = { to: string; label: string; icon: string; end?: boolean };
+type NavItem = { to: string; label: string; icon: string; end?: boolean; tourId?: string };
 
 const ITEMS: NavItem[] = [
-  { to: '/p',          label: 'Dashboard',  icon: '◉', end: true },
-  { to: '/p/inbox',    label: 'Inbox',      icon: '📥' },
-  { to: '/p/completed',label: 'Completed',  icon: '✓' },
-  { to: '/p/help',     label: 'Help',       icon: '?' },
+  { to: '/p',          label: 'Dashboard',  icon: '◉', end: true, tourId: 'p-dashboard' },
+  { to: '/p/inbox',    label: 'Inbox',      icon: '📥', tourId: 'p-inbox' },
+  { to: '/p/completed',label: 'Completed',  icon: '✓', tourId: 'p-completed' },
+  { to: '/p/help',     label: 'Help',       icon: '?', tourId: 'p-help' },
 ];
 
 export function ParticipantSideNav({ onNavigate }: { onNavigate?: () => void }) {
@@ -38,6 +38,7 @@ export function ParticipantSideNav({ onNavigate }: { onNavigate?: () => void }) 
             end={it.end}
             onClick={onNavigate}
             className={({ isActive }) => `sidenav-item ${isActive ? 'is-active' : ''}`}
+            {...(it.tourId ? { 'data-tour': it.tourId } : {})}
           >
             <span className="sidenav-icon" aria-hidden="true">{it.icon}</span>
             <span className="sidenav-label">{it.label}</span>

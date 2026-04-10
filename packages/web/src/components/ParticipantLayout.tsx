@@ -2,6 +2,14 @@ import { Outlet } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ParticipantSideNav } from './ParticipantSideNav';
 import { useSidebarState } from './SideNav';
+import { OnboardingTour, type TourStep } from './OnboardingTour';
+
+const PARTICIPANT_TOUR: TourStep[] = [
+  { target: '[data-tour="p-dashboard"]', text: 'Your dashboard shows charts and stats from your completed interviews.', position: 'right' },
+  { target: '[data-tour="p-inbox"]', text: 'Check your inbox for interviews a researcher has prepared for you. Click one to begin.', position: 'right' },
+  { target: '[data-tour="p-completed"]', text: 'All your finished interviews are saved here for reference.', position: 'right' },
+  { target: '[data-tour="p-help"]', text: 'Have questions? Check the Help section for tips and FAQs.', position: 'right' },
+];
 
 function readTheme(): 'light' | 'dark' {
   const v = localStorage.getItem('theme');
@@ -12,6 +20,7 @@ function readTheme(): 'light' | 'dark' {
 export function ParticipantLayout() {
   const sidebar = useSidebarState();
   const [theme, setTheme] = useState<'light' | 'dark'>(readTheme);
+  const [tourDone, setTourDone] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -45,6 +54,7 @@ export function ParticipantLayout() {
         <div className="app-content">
           <Outlet />
         </div>
+        {!tourDone && <OnboardingTour id="participant" steps={PARTICIPANT_TOUR} onDone={() => setTourDone(true)} />}
       </div>
     </div>
   );
