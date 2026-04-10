@@ -40,17 +40,19 @@ export function ParticipantInbox() {
   });
 
   return (
-    <div className="container view-in" style={{ paddingTop: 40 }}>
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+    <>
+      <header className="participant-topbar">
+        <div className="participant-brand">AI Interviewer</div>
+        <button type="button" className="btn btn-secondary" onClick={() => setAskSwitch(true)}>
+          Switch to researcher
+        </button>
+      </header>
+      <div className="container view-in" style={{ paddingTop: 40 }}>
+        <div className="card">
           <div>
             <h1 style={{ marginTop: 0 }}>💬 Your interview inbox</h1>
             <p className="subtitle">A researcher has prepared the following interviews. Click one to begin.</p>
           </div>
-          <button type="button" className="btn btn-secondary" onClick={() => setAskSwitch(true)}>
-            Switch to researcher
-          </button>
-        </div>
 
         {askSwitch && (
           <div style={{ marginTop: 16, padding: 16, background: 'var(--bg)', borderRadius: 8 }}>
@@ -111,7 +113,8 @@ export function ParticipantInbox() {
             ))}
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
