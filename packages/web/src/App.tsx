@@ -279,7 +279,7 @@ export function App() {
 
   // =============== THEME + LANG EFFECTS ===============
   useEffect(() => {
-    document.body.dataset.theme = theme;
+    document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
 
@@ -1027,7 +1027,7 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
               </button>
             )}
             <button className="icon-btn" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle dark mode">
-              {theme === 'dark' ? '☀' : '🌙'}
+              {theme === 'dark' ? '🌙' : '☀'}
             </button>
           </div>
         </div>

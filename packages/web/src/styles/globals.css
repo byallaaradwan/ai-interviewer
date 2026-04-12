@@ -810,9 +810,9 @@ details.analytics { margin-top: 20px; border-top: 1px solid var(--border); paddi
 .voice-tip { display: flex; align-items: center; gap: 10px; padding: 10px 14px; margin-bottom: 14px; background: var(--primary-soft); border-radius: 8px; font-size: 0.9rem; color: var(--muted); }
 
 .coach-anchor { position: relative; display: inline-flex; }
-.coach-bubble { position: absolute; z-index: 50; background: var(--text); color: var(--bg); padding: 8px 12px; border-radius: 10px; font-size: 0.82rem; line-height: 1.4; white-space: nowrap; max-width: 280px; white-space: normal; display: flex; align-items: flex-start; gap: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.25); animation: coach-in 0.3s ease-out; }
+.coach-bubble { position: absolute; z-index: 50; background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 12px 16px; border-radius: 14px; font-size: 0.85rem; line-height: 1.5; white-space: nowrap; max-width: 280px; white-space: normal; display: flex; align-items: flex-start; gap: 8px; box-shadow: var(--shadow-lg); animation: coach-in 0.3s ease-out; }
 @keyframes coach-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-.coach-bubble::after { content: ''; position: absolute; width: 8px; height: 8px; background: var(--text); transform: rotate(45deg); }
+.coach-bubble::after { content: ''; position: absolute; width: 8px; height: 8px; background: var(--card); border: 1px solid var(--border); border-top: none; border-left: none; transform: rotate(45deg); }
 .coach-top { bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); }
 .coach-top::after { bottom: -4px; left: 50%; margin-left: -4px; }
 .coach-bottom { top: calc(100% + 10px); left: 50%; transform: translateX(-50%); }

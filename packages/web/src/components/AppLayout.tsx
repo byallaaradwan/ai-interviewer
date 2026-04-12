@@ -70,7 +70,7 @@ export function AppLayout() {
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             aria-label="Toggle dark mode"
           >
-            {theme === 'dark' ? '☀' : '🌙'} {theme === 'dark' ? 'Light' : 'Dark'}
+            {theme === 'dark' ? '🌙' : '☀'} {theme === 'dark' ? 'Dark' : 'Light'}
           </button>
         </header>
         <div className="app-content">
