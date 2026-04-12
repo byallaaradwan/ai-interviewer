@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ParticipantSideNav } from './ParticipantSideNav';
 import { useSidebarState } from './SideNav';
 import { OnboardingTour, type TourStep } from './OnboardingTour';
+import { createT, type Lang } from '../i18n';
 
 const PARTICIPANT_TOUR: TourStep[] = [
   { target: '[data-tour="p-dashboard"]', text: 'Your dashboard shows charts and stats from your completed interviews.', position: 'right' },
@@ -18,6 +19,8 @@ function readTheme(): 'light' | 'dark' {
 }
 
 export function ParticipantLayout() {
+  const lang: Lang = (localStorage.getItem('lang') as Lang) || 'en';
+  const t = createT(lang);
   const sidebar = useSidebarState();
   const [theme, setTheme] = useState<'light' | 'dark'>(readTheme);
   const [tourDone, setTourDone] = useState(false);
@@ -48,7 +51,7 @@ export function ParticipantLayout() {
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             aria-label="Toggle dark mode"
           >
-            {theme === 'dark' ? '🌙' : '☀'} {theme === 'dark' ? 'Dark' : 'Light'}
+            {theme === 'dark' ? '🌙' : '☀'} {theme === 'dark' ? t('themeDark') : t('themeLight')}
           </button>
         </header>
         <div className="app-content">

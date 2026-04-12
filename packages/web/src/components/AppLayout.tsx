@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { SideNav, useSidebarState } from './SideNav';
 import { OnboardingTour, type TourStep } from './OnboardingTour';
-import type { Lang } from '../i18n';
+import { createT, type Lang } from '../i18n';
 
 const RESEARCHER_TOUR: TourStep[] = [
   { target: '[data-tour="sidenav"]', text: 'This is your main navigation. All your tools live here — interviews, brainstorming, history, and more.', position: 'right' },
@@ -27,6 +27,7 @@ function readTheme(): 'light' | 'dark' {
 
 export function AppLayout() {
   const [lang, setLang] = useState<Lang>(readLang);
+  const t = createT(lang);
   const [theme, setTheme] = useState<'light' | 'dark'>(readTheme);
   const sidebar = useSidebarState();
   const [tourDone, setTourDone] = useState(false);
@@ -70,7 +71,7 @@ export function AppLayout() {
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             aria-label="Toggle dark mode"
           >
-            {theme === 'dark' ? '🌙' : '☀'} {theme === 'dark' ? 'Dark' : 'Light'}
+            {theme === 'dark' ? '🌙' : '☀'} {theme === 'dark' ? t('themeDark') : t('themeLight')}
           </button>
         </header>
         <div className="app-content">

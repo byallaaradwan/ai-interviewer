@@ -50,6 +50,14 @@ export function ParticipantSideNav({ onNavigate }: { onNavigate?: () => void }) 
         ))}
       </div>
       <div className="sidenav-footer">
+        <NavLink to="/p/settings" onClick={onNavigate} className={({ isActive }) => `sidenav-item ${isActive ? 'is-active' : ''}`}>
+          <span className="sidenav-icon" aria-hidden="true">⚙</span>
+          <span className="sidenav-label">{t('navSettings')}</span>
+        </NavLink>
+        <NavLink to="/p/account" onClick={onNavigate} className={({ isActive }) => `sidenav-item ${isActive ? 'is-active' : ''}`}>
+          <span className="sidenav-icon" aria-hidden="true">◐</span>
+          <span className="sidenav-label">{t('navAccount')}</span>
+        </NavLink>
         {!askPass ? (
           <button
             type="button"

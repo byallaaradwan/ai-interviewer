@@ -15,6 +15,11 @@ import { ParticipantInbox } from './pages/ParticipantInbox';
 import { ParticipantDashboard } from './pages/ParticipantDashboard';
 import { ParticipantCompleted } from './pages/ParticipantCompleted';
 import { ParticipantHelp } from './pages/ParticipantHelp';
+import { Settings } from './pages/Settings';
+import { ParticipantSettings } from './pages/ParticipantSettings';
+import { Account } from './pages/Account';
+import { ParticipantAccount } from './pages/ParticipantAccount';
+import { ResearcherHelp } from './pages/ResearcherHelp';
 import { getRole } from './lib/role';
 
 function RoleGate({ children, allow }: { children: JSX.Element; allow: 'researcher' | 'participant' }) {
@@ -41,15 +46,17 @@ export function Router() {
           <Route path="email" element={<EmailGen />} />
           <Route path="history" element={<History />} />
           <Route path="templates" element={<Templates />} />
-          <Route path="settings" element={<Placeholder titleKey="navSettings" />} />
-          <Route path="account" element={<Placeholder titleKey="navAccount" />} />
-          <Route path="help" element={<Placeholder titleKey="navHelp" />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="account" element={<Account />} />
+          <Route path="help" element={<ResearcherHelp />} />
         </Route>
         <Route path="/p" element={<RoleGate allow="participant"><ParticipantLayout /></RoleGate>}>
           <Route index element={<ParticipantDashboard />} />
           <Route path="inbox" element={<ParticipantInbox />} />
           <Route path="completed" element={<ParticipantCompleted />} />
           <Route path="help" element={<ParticipantHelp />} />
+          <Route path="settings" element={<ParticipantSettings />} />
+          <Route path="account" element={<ParticipantAccount />} />
         </Route>
         <Route path="*" element={<Navigate to="/landing" replace />} />
       </Routes>
