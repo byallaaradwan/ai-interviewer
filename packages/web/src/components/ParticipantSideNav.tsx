@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { setRole, PASSCODE } from '../lib/role';
+import { MuhawerLogo } from './MuhawerLogo';
 
 type NavItem = { to: string; label: string; icon: string; end?: boolean; tourId?: string };
 
@@ -26,8 +27,8 @@ export function ParticipantSideNav({ onNavigate }: { onNavigate?: () => void }) 
     <nav className="sidenav" aria-label="Main">
       <div className="sidenav-header">
         <NavLink to="/p" className="sidenav-brand" onClick={onNavigate}>
-          <span className="sidenav-brand-mark">AI</span>
-          <span className="sidenav-brand-text">AI Interviewer</span>
+          <MuhawerLogo size={28} />
+          <span className="sidenav-brand-text">Muhawer</span>
         </NavLink>
       </div>
       <div className="sidenav-section">

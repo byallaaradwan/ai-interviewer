@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { createT, type Lang } from '../i18n';
 import { setRole } from '../lib/role';
+import { MuhawerLogo } from './MuhawerLogo';
 
 type NavItem = { to: string; labelKey: string; icon: string; end?: boolean; tourId?: string };
 
@@ -47,8 +48,8 @@ export function SideNav({ lang, onNavigate }: { lang: Lang; onNavigate?: () => v
     <nav className="sidenav" aria-label="Main" data-tour="sidenav">
       <div className="sidenav-header">
         <NavLink to="/app" className="sidenav-brand" onClick={onNavigate}>
-          <span className="sidenav-brand-mark">AI</span>
-          <span className="sidenav-brand-text">AI Interviewer</span>
+          <MuhawerLogo size={28} />
+          <span className="sidenav-brand-text">{t('brandName')}</span>
         </NavLink>
       </div>
       <div className="sidenav-section">
