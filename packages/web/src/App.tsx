@@ -231,6 +231,8 @@ export function App() {
   const [closingPhase, setClosingPhase] = useState<ClosingPhase>(null);
   const [contactConsent, setContactConsent] = useState<'yes' | 'no' | null>(null);
   const [contactChannel, setContactChannel] = useState<string | null>(null);
+  const [contactDetail, setContactDetail] = useState('');
+  const [contactDetailPhase, setContactDetailPhase] = useState(false);
   const [complete, setComplete] = useState(false);
   const [quitEarly, setQuitEarly] = useState(false);
   const [sessionStart, setSessionStart] = useState<number | null>(null);
@@ -321,6 +323,18 @@ export function App() {
   // =============== PERSIST SETUP FIELDS ===============
   useEffect(() => { localStorage.setItem('provider', provider); }, [provider]);
   useEffect(() => { localStorage.setItem('system_prompt', systemPrompt); }, [systemPrompt]);
+
+  // Re-inject language directive when language changes mid-interview
+  useEffect(() => {
+    if (view !== 'chat' && view !== 'welcome') return;
+    setSystemPrompt(prev => {
+      const arDirective = '\n\nIMPORTANT: Conduct the entire interview in Arabic (العربية). The participant is an Arabic speaker. All "message" fields in your JSON output MUST be in Arabic. Keep "action" values in English ("follow_up", "next_core", "complete").';
+      const cleaned = prev.replace(arDirective, '');
+      if (lang === 'ar') return cleaned + arDirective;
+      return cleaned;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang]);
   useEffect(() => { localStorage.setItem('topic', topic); }, [topic]);
   useEffect(() => { localStorage.setItem('audience', audience); }, [audience]);
   useEffect(() => { localStorage.setItem('researchGoal', researchGoal); }, [researchGoal]);
@@ -537,7 +551,8 @@ export function App() {
           };
         } else {
           setContactChannel(label);
-          finishClosing();
+          setContactDetailPhase(true);
+          appendModel(t('enterContactDetail'), true);
         }
       },
     });
@@ -652,17 +667,14 @@ export function App() {
     launchConfetti();
     const isParticipant = localStorage.getItem('participant_mode') === '1';
     setTimeout(() => generateSummary(), isParticipant ? 1500 : 10000);
-    if (isParticipant) {
-      // After summary persists to history, clean up and bounce back to inbox
-      setTimeout(() => {
-        const pid = localStorage.getItem('participant_pending_id');
-        if (pid) removePending(pid);
-        localStorage.removeItem('participant_mode');
-        localStorage.removeItem('participant_pending_id');
-        window.location.href = '/p/inbox';
-      }, 8000);
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const cleanupParticipant = useCallback(() => {
+    const pid = localStorage.getItem('participant_pending_id');
+    if (pid) removePending(pid);
+    localStorage.removeItem('participant_mode');
+    localStorage.removeItem('participant_pending_id');
   }, []);
 
   // =============== SUMMARY GENERATION ===============
@@ -702,7 +714,7 @@ export function App() {
   "quotes": [{"context": "the question that prompted this", "quote": "verbatim user quote"}, ...],
   "insights": ["insight 1", "insight 2", ...]
 }
-Provide 3-5 themes, 3-5 notable quotes, and 3-5 actionable insights for a research/product team.${tailor}
+You MUST provide at least 3 themes, at least 3 notable quotes, and at least 3 actionable insights for a research/product team. If the transcript is short, still generate reasonable observations. Never return empty arrays.${tailor}
 Output ONLY the JSON object, no markdown fences.${langInstr}
 
 Transcript:
@@ -1191,10 +1203,28 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
                     <option value="">{t('demoAgePH')}</option>
                     {['18-24','25-34','35-44','45-54','55-64','65+'].map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
-                  <select value={demoRole} onChange={e => setDemoRole(e.target.value)}>
-                    <option value="">{t('demoRolePH')}</option>
-                    {[t('roleStudent'),t('roleIC'),t('roleManager'),t('roleFounder'),t('roleNotWorking'),t('roleRetired'),t('roleOther')].map(o => <option key={o} value={o}>{o}</option>)}
-                  </select>
+                  <div>
+                    <div className="helper" style={{ marginBottom: 6 }}>{t('demoRolePH')}</div>
+                    <div className="chip-row" style={{ justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+                      {[t('roleStudent'),t('roleIC'),t('roleManager'),t('roleFounder'),t('roleNotWorking'),t('roleRetired'),t('roleOther')].map(o => (
+                        <button
+                          key={o}
+                          type="button"
+                          className={`chip ${demoRole.split(',').map(r => r.trim()).filter(Boolean).includes(o) ? 'is-selected' : ''}`}
+                          onClick={() => {
+                            const current = demoRole.split(',').map(r => r.trim()).filter(Boolean);
+                            if (current.includes(o)) {
+                              setDemoRole(current.filter(r => r !== o).join(', '));
+                            } else {
+                              setDemoRole([...current, o].join(', '));
+                            }
+                          }}
+                        >
+                          {o}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <select value={demoExp} onChange={e => setDemoExp(e.target.value)}>
                     <option value="">{t('demoExpPH')}</option>
                     {[t('expFirst'),t('expFew'),t('expRegular'),t('expExpert')].map(o => <option key={o} value={o}>{o}</option>)}
@@ -1207,12 +1237,14 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
               )}
             </details>
 
-            {/* 6. Target audience */}
-            <div className="field">
-              <label htmlFor="audience">{t('audienceLabel')}</label>
-              <input id="audience" type="text" value={audience} onChange={e => setAudience(e.target.value)} placeholder={t('audiencePH')} />
-              <div className="helper">{t('audienceHelp')}</div>
-            </div>
+            {/* 6. Target audience — hidden when screening is enabled */}
+            {!demoEnabled && (
+              <div className="field">
+                <label htmlFor="audience">{t('audienceLabel')}</label>
+                <input id="audience" type="text" value={audience} onChange={e => setAudience(e.target.value)} placeholder={t('audiencePH')} />
+                <div className="helper">{t('audienceHelp')}</div>
+              </div>
+            )}
 
             {/* 7. Geography / region — dropdown */}
             <div className="field">
@@ -1458,6 +1490,22 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
               </div>
             )}
 
+            {contactDetailPhase && !otherInputOpen && (
+              <div className="chip-area">
+                <div className="chip-other-input">
+                  <input
+                    type={contactChannel?.toLowerCase().includes('email') || contactChannel?.toLowerCase().includes(t('chipEmail').toLowerCase()) ? 'email' : 'tel'}
+                    placeholder={contactChannel?.toLowerCase().includes('email') || contactChannel?.toLowerCase().includes(t('chipEmail').toLowerCase()) ? t('contactEmailPH') : t('contactPhonePH')}
+                    value={contactDetail}
+                    onChange={e => setContactDetail(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && contactDetail.trim()) { appendUser(contactDetail.trim(), true); setContactDetailPhase(false); finishClosing(); } }}
+                    autoFocus
+                  />
+                  <button className="btn" disabled={!contactDetail.trim()} onClick={() => { appendUser(contactDetail.trim(), true); setContactDetailPhase(false); finishClosing(); }}>{t('submitContact')}</button>
+                </div>
+              </div>
+            )}
+
             {closingPhase === 'done' && (
               <div className="submit-area">
                 <p>{t('submitHint')}</p>
@@ -1493,105 +1541,133 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
       {view === 'summary' && (
         <div className="container view-in">
           <div className="card">
-            {quitEarly && <div className="early-banner">{t('earlyBanner')}</div>}
-            <h1>{t('summaryTitle')}</h1>
-            <p className="subtitle">{t('summarySub')}</p>
-            {generatingSummary ? (
-              <p style={{ color: 'var(--muted)' }}>{t('summaryGenerating')}</p>
-            ) : summaryError ? (
-              <p style={{ color: 'var(--error)', padding: 16, background: 'rgba(224,90,90,0.08)', borderRadius: 12, border: '1px solid var(--error)' }}>
-                {t('summaryError')}
-                <br />
-                <small style={{ color: 'var(--muted)' }}>{summaryError}</small>
-              </p>
-            ) : summary && (
+            {localStorage.getItem('participant_mode') === '1' ? (
               <>
-                <div className="summary-section">
-                  <h2>{t('keyThemes')}</h2>
-                  <ul>{summary.themes.map((x, i) => <li key={i}>{x}</li>)}</ul>
-                </div>
-                <div className="summary-section">
-                  <h2>{t('notableQuotes')}</h2>
-                  {summary.quotes.map((q, i) => (
-                    <div className="quote" key={i}>
-                      <div className="q-context">{t('inResponseTo')}: "{q.context}"</div>
-                      <div>"{q.quote}"</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="summary-section">
-                  <h2>{t('actionableInsights')}</h2>
-                  <ul>{summary.insights.map((x, i) => <li key={i}>{x}</li>)}</ul>
-                </div>
-                <SummaryExtras history={history} themes={summary.themes || []} insights={summary.insights || []} contradictions={contradictions} lang={lang} />
-                {getClosingResponses().length > 0 && (
-                  <div className="summary-section">
-                    <h2>{t('closingResponses')}</h2>
-                    {getClosingResponses().map((c, i) => (
-                      <div className="quote" key={i}>
-                        <div className="q-context">{c.question || ''}</div>
-                        <div>{c.answer || '—'}</div>
+                <h1>{t('participantTranscriptTitle')}</h1>
+                <p className="subtitle">{t('summarySub')}</p>
+                {generatingSummary && <p style={{ color: 'var(--muted)' }}>{t('summaryGenerating')}</p>}
+                <div className="transcript" style={{ marginTop: 16 }}>
+                  <div>
+                    {history.map((m, i) => (
+                      <div className="transcript-msg" key={i}>
+                        <div className="role">{m.role === 'model' ? t('interviewer') : t('participant')} · {fmtTime(m.ts)}</div>
+                        <div>{m.text}</div>
                       </div>
                     ))}
                   </div>
+                </div>
+                <div className="row" style={{ marginTop: 28, flexWrap: 'wrap' }}>
+                  <a href="/p" className="btn" style={{ textDecoration: 'none' }} onClick={cleanupParticipant}>{t('goToDashboard')}</a>
+                  <a href="/p/inbox" className="btn btn-secondary" style={{ textDecoration: 'none' }} onClick={cleanupParticipant}>{t('startNewInterview')}</a>
+                  <button className="btn btn-secondary" onClick={handleCopySummary}>{t('copyClipboard')}</button>
+                  <button className="btn btn-secondary" onClick={handleDownloadMd}>{t('downloadMd')}</button>
+                  <button className="btn btn-secondary" onClick={handleDownloadJson}>{t('downloadJson')}</button>
+                  <button className="btn btn-secondary" onClick={handleDownloadPdf}>{t('downloadPdf')}</button>
+                </div>
+              </>
+            ) : (
+              <>
+                {quitEarly && <div className="early-banner">{t('earlyBanner')}</div>}
+                <h1>{t('summaryTitle')}</h1>
+                <p className="subtitle">{t('summarySub')}</p>
+                {generatingSummary ? (
+                  <p style={{ color: 'var(--muted)' }}>{t('summaryGenerating')}</p>
+                ) : summaryError ? (
+                  <p style={{ color: 'var(--error)', padding: 16, background: 'rgba(224,90,90,0.08)', borderRadius: 12, border: '1px solid var(--error)' }}>
+                    {t('summaryError')}
+                    <br />
+                    <small style={{ color: 'var(--muted)' }}>{summaryError}</small>
+                  </p>
+                ) : summary && (
+                  <>
+                    <div className="summary-section">
+                      <h2>{t('keyThemes')}</h2>
+                      {summary.themes.length > 0 ? <ul>{summary.themes.map((x, i) => <li key={i}>{x}</li>)}</ul> : <p style={{ color: 'var(--muted)', fontStyle: 'italic' }}>{t('dataNS')}</p>}
+                    </div>
+                    <div className="summary-section">
+                      <h2>{t('notableQuotes')}</h2>
+                      {summary.quotes.length > 0 ? summary.quotes.map((q, i) => (
+                        <div className="quote" key={i}>
+                          <div className="q-context">{t('inResponseTo')}: &ldquo;{q.context}&rdquo;</div>
+                          <div>&ldquo;{q.quote}&rdquo;</div>
+                        </div>
+                      )) : <p style={{ color: 'var(--muted)', fontStyle: 'italic' }}>{t('dataNS')}</p>}
+                    </div>
+                    <div className="summary-section">
+                      <h2>{t('actionableInsights')}</h2>
+                      {summary.insights.length > 0 ? <ul>{summary.insights.map((x, i) => <li key={i}>{x}</li>)}</ul> : <p style={{ color: 'var(--muted)', fontStyle: 'italic' }}>{t('dataNS')}</p>}
+                    </div>
+                    <SummaryExtras history={history} themes={summary.themes || []} insights={summary.insights || []} contradictions={contradictions} lang={lang} />
+                    {getClosingResponses().length > 0 && (
+                      <div className="summary-section">
+                        <h2>{t('closingResponses')}</h2>
+                        {getClosingResponses().map((c, i) => (
+                          <div className="quote" key={i}>
+                            <div className="q-context">{c.question || ''}</div>
+                            <div>{c.answer || '—'}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
+
+                <details className="analytics">
+                  <summary>📊 <span>{t('analyticsTitle')}</span></summary>
+                  <div style={{ marginTop: 12 }}>
+                    <div className="stats-grid">
+                      <div className="stat-box"><div className="stat-value">{analytics.totalAnswers}</div><div className="stat-label">{t('statAnswers')}</div></div>
+                      <div className="stat-box"><div className="stat-value">{analytics.avgLen}</div><div className="stat-label">{t('statAvgLen')}</div></div>
+                      <div className="stat-box"><div className="stat-value">{analytics.durationMin}m</div><div className="stat-label">{t('statDuration')}</div></div>
+                      <div className="stat-box"><div className="stat-value">{analytics.followUps}</div><div className="stat-label">{t('statFollowups')}</div></div>
+                    </div>
+                    <h3>{t('responseLengths')}</h3>
+                    {analytics.lenBars.length ? analytics.lenBars.map(r => (
+                      <div className="len-bar" key={r.idx}>
+                        <span style={{ minWidth: 28 }}>#{r.idx}</span>
+                        <div className="bar"><div className="fill" style={{ width: `${r.pct}%` }} /></div>
+                        <span>{r.len}</span>
+                      </div>
+                    )) : <p style={{ color: 'var(--muted)', fontSize: 13 }}>—</p>}
+                    <h3 style={{ marginTop: 20 }}>{t('topKeywords')}</h3>
+                    <div className="keyword-cloud">
+                      {analytics.keywords.length ? analytics.keywords.map((k, i) => (
+                        <span key={i} className="kw" style={{ fontSize: Math.round(k.scale * 14) }}>
+                          {k.word} <span style={{ opacity: 0.6 }}>{k.count}</span>
+                        </span>
+                      )) : <p style={{ color: 'var(--muted)', fontSize: 13 }}>—</p>}
+                    </div>
+                  </div>
+                </details>
+
+                <details className="transcript">
+                  <summary><strong>{t('fullTranscript')}</strong></summary>
+                  <div style={{ marginTop: 12 }}>
+                    {history.map((m, i) => (
+                      <div className="transcript-msg" key={i}>
+                        <div className="role">{m.role === 'model' ? t('interviewer') : t('participant')} · {fmtTime(m.ts)}</div>
+                        <div>{m.text}</div>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+
+                <div className="row" style={{ marginTop: 28, flexWrap: 'wrap' }}>
+                  <a
+                    href={getRole() === 'participant' ? '/p' : getRole() === 'researcher' ? '/app' : '/landing'}
+                    className="btn btn-secondary"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    {dir === 'rtl' ? '→' : '←'} {t('backToDashboard')}
+                  </a>
+                  <button className="btn" onClick={handleCopySummary}>{t('copyClipboard')}</button>
+                  <button className="btn btn-secondary" onClick={handleDownloadMd}>{t('downloadMd')}</button>
+                  <button className="btn btn-secondary" onClick={handleDownloadJson}>{t('downloadJson')}</button>
+                  <button className="btn btn-secondary" onClick={handleDownloadPdf}>{t('downloadPdf')}</button>
+                  <button className="btn" style={{ marginLeft: 'auto' }} onClick={() => setNewConfirmOpen(true)}>{t('startNew')}</button>
+                </div>
               </>
             )}
-
-            <details className="analytics">
-              <summary>📊 <span>{t('analyticsTitle')}</span></summary>
-              <div style={{ marginTop: 12 }}>
-                <div className="stats-grid">
-                  <div className="stat-box"><div className="stat-value">{analytics.totalAnswers}</div><div className="stat-label">{t('statAnswers')}</div></div>
-                  <div className="stat-box"><div className="stat-value">{analytics.avgLen}</div><div className="stat-label">{t('statAvgLen')}</div></div>
-                  <div className="stat-box"><div className="stat-value">{analytics.durationMin}m</div><div className="stat-label">{t('statDuration')}</div></div>
-                  <div className="stat-box"><div className="stat-value">{analytics.followUps}</div><div className="stat-label">{t('statFollowups')}</div></div>
-                </div>
-                <h3>{t('responseLengths')}</h3>
-                {analytics.lenBars.length ? analytics.lenBars.map(r => (
-                  <div className="len-bar" key={r.idx}>
-                    <span style={{ minWidth: 28 }}>#{r.idx}</span>
-                    <div className="bar"><div className="fill" style={{ width: `${r.pct}%` }} /></div>
-                    <span>{r.len}</span>
-                  </div>
-                )) : <p style={{ color: 'var(--muted)', fontSize: 13 }}>—</p>}
-                <h3 style={{ marginTop: 20 }}>{t('topKeywords')}</h3>
-                <div className="keyword-cloud">
-                  {analytics.keywords.length ? analytics.keywords.map((k, i) => (
-                    <span key={i} className="kw" style={{ fontSize: Math.round(k.scale * 14) }}>
-                      {k.word} <span style={{ opacity: 0.6 }}>{k.count}</span>
-                    </span>
-                  )) : <p style={{ color: 'var(--muted)', fontSize: 13 }}>—</p>}
-                </div>
-              </div>
-            </details>
-
-            <details className="transcript">
-              <summary><strong>{t('fullTranscript')}</strong></summary>
-              <div style={{ marginTop: 12 }}>
-                {history.map((m, i) => (
-                  <div className="transcript-msg" key={i}>
-                    <div className="role">{m.role === 'model' ? t('interviewer') : t('participant')} · {fmtTime(m.ts)}</div>
-                    <div>{m.text}</div>
-                  </div>
-                ))}
-              </div>
-            </details>
-
-            <div className="row" style={{ marginTop: 28, flexWrap: 'wrap' }}>
-              <a
-                href={getRole() === 'participant' ? '/p' : getRole() === 'researcher' ? '/app' : '/landing'}
-                className="btn btn-secondary"
-                style={{ textDecoration: 'none' }}
-              >
-                {dir === 'rtl' ? '→' : '←'} {t('backToDashboard')}
-              </a>
-              <button className="btn" onClick={handleCopySummary}>{t('copyClipboard')}</button>
-              <button className="btn btn-secondary" onClick={handleDownloadMd}>{t('downloadMd')}</button>
-              <button className="btn btn-secondary" onClick={handleDownloadJson}>{t('downloadJson')}</button>
-              <button className="btn btn-secondary" onClick={handleDownloadPdf}>{t('downloadPdf')}</button>
-              <button className="btn" style={{ marginLeft: 'auto' }} onClick={() => setNewConfirmOpen(true)}>{t('startNew')}</button>
-            </div>
           </div>
         </div>
       )}

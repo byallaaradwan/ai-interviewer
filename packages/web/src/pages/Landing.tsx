@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { setRole, PASSCODE } from '../lib/role';
+import { setRole, PASSCODE, PARTICIPANT_PASSCODE } from '../lib/role';
 import { MuhawerLogo } from '../components/MuhawerLogo';
 import { I18N, createT, type Lang } from '../i18n';
 
@@ -15,6 +15,12 @@ export function Landing() {
   const [askPass, setAskPass] = useState(false);
   const [pass, setPass] = useState('');
   const [err, setErr] = useState('');
+  const [showPass, setShowPass] = useState(false);
+  // Participant passcode
+  const [askParticipantPass, setAskParticipantPass] = useState(false);
+  const [participantPass, setParticipantPass] = useState('');
+  const [participantErr, setParticipantErr] = useState('');
+  const [showParticipantPass, setShowParticipantPass] = useState(false);
 
   const t = createT(lang);
 
@@ -32,11 +38,15 @@ export function Landing() {
     setLangConfirmed(true);
   };
 
-  const pickParticipant = () => { setRole('participant'); nav('/p'); };
+  const pickParticipant = () => { setAskParticipantPass(true); setParticipantErr(''); };
   const pickResearcher = () => { setAskPass(true); setErr(''); };
   const submitPass = () => {
     if (pass === PASSCODE) { setRole('researcher'); nav('/app'); }
     else setErr(t('landingWrongPass'));
+  };
+  const submitParticipantPass = () => {
+    if (participantPass === PARTICIPANT_PASSCODE) { setRole('participant'); nav('/p'); }
+    else setParticipantErr(t('landingWrongPass'));
   };
 
   return (
@@ -109,7 +119,7 @@ export function Landing() {
             <h1 style={{ marginTop: 0 }}>{t('landingTitle')}</h1>
             <p className="subtitle">{t('landingSub')}</p>
 
-            {!askPass ? (
+            {!askPass && !askParticipantPass ? (
               <div style={{ display: 'grid', gap: 12, marginTop: 20 }}>
                 <button type="button" className="btn" onClick={pickResearcher} style={{ padding: '18px', fontSize: '1.05rem' }}>
                   {t('landingResearcher')}
@@ -118,21 +128,44 @@ export function Landing() {
                   {t('landingParticipant')}
                 </button>
               </div>
-            ) : (
+            ) : askPass ? (
               <div style={{ display: 'grid', gap: 12, marginTop: 20 }}>
                 <p>{t('landingPassPrompt')}</p>
-                <input
-                  type="password"
-                  value={pass}
-                  onChange={e => { setPass(e.target.value); setErr(''); }}
-                  onKeyDown={e => { if (e.key === 'Enter') submitPass(); }}
-                  autoFocus
-                  placeholder={t('landingPassPH')}
-                />
+                <div className="input-row">
+                  <input
+                    type={showPass ? 'text' : 'password'}
+                    value={pass}
+                    onChange={e => { setPass(e.target.value); setErr(''); }}
+                    onKeyDown={e => { if (e.key === 'Enter') submitPass(); }}
+                    autoFocus
+                    placeholder={t('landingPassPH')}
+                  />
+                  <button type="button" className="toggle" onClick={() => setShowPass(v => !v)}>{showPass ? 'HIDE' : 'SHOW'}</button>
+                </div>
                 {err && <p style={{ color: 'var(--error)', margin: 0 }}>{err}</p>}
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button type="button" className="btn" onClick={submitPass}>{t('landingContinue')}</button>
                   <button type="button" className="btn btn-secondary" onClick={() => { setAskPass(false); setPass(''); }}>{t('landingBack')}</button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: 12, marginTop: 20 }}>
+                <p>{t('landingParticipantPassPrompt')}</p>
+                <div className="input-row">
+                  <input
+                    type={showParticipantPass ? 'text' : 'password'}
+                    value={participantPass}
+                    onChange={e => { setParticipantPass(e.target.value); setParticipantErr(''); }}
+                    onKeyDown={e => { if (e.key === 'Enter') submitParticipantPass(); }}
+                    autoFocus
+                    placeholder={t('landingPassPH')}
+                  />
+                  <button type="button" className="toggle" onClick={() => setShowParticipantPass(v => !v)}>{showParticipantPass ? 'HIDE' : 'SHOW'}</button>
+                </div>
+                {participantErr && <p style={{ color: 'var(--error)', margin: 0 }}>{participantErr}</p>}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" className="btn" onClick={submitParticipantPass}>{t('landingContinue')}</button>
+                  <button type="button" className="btn btn-secondary" onClick={() => { setAskParticipantPass(false); setParticipantPass(''); }}>{t('landingBack')}</button>
                 </div>
               </div>
             )}

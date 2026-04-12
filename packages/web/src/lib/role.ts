@@ -2,6 +2,7 @@ export type Role = 'researcher' | 'participant';
 
 const ROLE_KEY = 'app_role';
 export const PASSCODE = '123456';
+export const PARTICIPANT_PASSCODE = '654321';
 
 export function getRole(): Role | null {
   const v = localStorage.getItem(ROLE_KEY);

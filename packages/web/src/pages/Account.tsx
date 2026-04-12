@@ -9,10 +9,12 @@ export function Account() {
   const t = createT(lang);
   const [displayName, setDisplayName] = useState(() => localStorage.getItem('user_display_name') || '');
   const [confirmClear, setConfirmClear] = useState(false);
+  const [saved, setSaved] = useState(false);
 
-  const saveDisplayName = (v: string) => {
-    setDisplayName(v);
-    localStorage.setItem('user_display_name', v);
+  const handleSave = () => {
+    localStorage.setItem('user_display_name', displayName);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   };
 
   const exportData = () => {
@@ -67,7 +69,11 @@ export function Account() {
         <h3>{t('accountProfile')}</h3>
         <div className="field">
           <label>{t('accountDisplayName')}</label>
-          <input type="text" value={displayName} onChange={e => saveDisplayName(e.target.value)} placeholder={t('accountDisplayNamePH')} />
+          <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder={t('accountDisplayNamePH')} />
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
+          <button type="button" className="btn" onClick={handleSave}>{t('save')}</button>
+          {saved && <span style={{ color: 'var(--success, #22c55e)', fontSize: '0.85rem' }}>✓ {t('settingsSaved')}</span>}
         </div>
         <div className="settings-row">
           <div><label className="settings-label">{t('accountRole')}</label></div>

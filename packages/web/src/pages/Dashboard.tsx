@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useOutletContext } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import { createT, type Lang } from '../i18n';
 
 type Ctx = { lang: Lang };
@@ -39,8 +39,29 @@ const COLORS = ['var(--primary)', 'var(--secondary)', 'var(--accent)', '#3DB3C4'
 export function Dashboard() {
   const { lang } = useOutletContext<Ctx>();
   const t = createT(lang);
+  const nav = useNavigate();
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
+  const [newInterviewAlert, setNewInterviewAlert] = useState(false);
+  const lastSeenCount = useRef<number>(-1);
+  const displayName = localStorage.getItem('user_display_name') || '';
+
   useEffect(() => { setEntries(readHistory()); }, []);
+
+  // Detect new interviews via polling
+  useEffect(() => {
+    if (lastSeenCount.current === -1) {
+      lastSeenCount.current = entries.length;
+    }
+    const timer = setInterval(() => {
+      const current = readHistory();
+      if (current.length > lastSeenCount.current) {
+        setNewInterviewAlert(true);
+        setEntries(current);
+        lastSeenCount.current = current.length;
+      }
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [entries.length]);
 
   const totalInterviews = entries.length;
   const totalTurns = entries.reduce((s, e) => s + (e.turns || 0), 0);
@@ -98,7 +119,7 @@ export function Dashboard() {
     return (
       <div className="page">
         <div className="page-header">
-          <h1>{t('dashTitle')}</h1>
+          <h1>{t('dashTitle')}{displayName ? `, ${displayName}` : ''}</h1>
           <p className="subtitle">{t('dashSub')}</p>
         </div>
         <div className="dash-grid">
@@ -123,9 +144,21 @@ export function Dashboard() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>{t('dashTitle')}</h1>
+        <h1>{t('dashTitle')}{displayName ? `, ${displayName}` : ''}</h1>
         <p className="subtitle">{t('dashSub')}</p>
       </div>
+
+      {newInterviewAlert && (
+        <div className="resume-banner" style={{ marginBottom: 18 }}>
+          <div className="text">
+            <h3>🎉 {t('newInterviewAlert')}</h3>
+          </div>
+          <div className="actions">
+            <button className="btn" onClick={() => { setNewInterviewAlert(false); nav('/app/history'); }}>{t('showBtn')}</button>
+            <button className="btn btn-secondary" onClick={() => setNewInterviewAlert(false)}>✕</button>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="stats-grid" style={{ marginBottom: 24 }}>

@@ -26,10 +26,21 @@ Best,
 {your_name}`;
 
 function emailSystemPrompt(lang: Lang, tone: Tone): string {
+  const toneInstructions: Record<Tone, string> = {
+    friendly: 'Use a warm, conversational tone. Use first names naturally. Feel approachable and human. Light humor is welcome.',
+    professional: 'Use formal business language throughout. No colloquialisms, no exclamation marks, no casual expressions. Address the recipient formally. Keep sentences concise and structured. Use a direct, respectful tone appropriate for corporate communication. The email must feel like it comes from a senior researcher at a reputable firm.',
+    casual: 'Keep it super relaxed and brief. Short sentences, conversational style. Emoji are fine. Feel like a quick message from a friend.',
+  };
+
   if (lang === 'ar') {
-    return `أنت كاتب نسخ تسويقية خبير متخصص في تجنيد المشاركين في أبحاث المستخدم. اكتب بريدًا إلكترونيًا قصيرًا (أقل من 200 كلمة) بأسلوب ${tone}، يدعو الجمهور المحدد لمقابلة مدتها 15-30 دقيقة. اشمل سطر الموضوع. استخدم {first_name} و{your_name} كمتغيرات. اذكر بوضوح أنك لا تبيع شيئًا واقترح حافزًا.`;
+    const arTone: Record<Tone, string> = {
+      friendly: 'استخدم نبرة دافئة ومحادثة. كن ودودًا وطبيعيًا.',
+      professional: 'استخدم لغة أعمال رسمية بالكامل. لا تستخدم تعابير عامية أو علامات تعجب. خاطب المستلم بشكل رسمي. اجعل الجمل موجزة ومنظمة. يجب أن يبدو البريد وكأنه من باحث كبير في شركة محترمة.',
+      casual: 'اجعله مختصرًا وغير رسمي. جمل قصيرة ومحادثة.',
+    };
+    return `أنت كاتب نسخ تسويقية خبير متخصص في تجنيد المشاركين في أبحاث المستخدم. ${arTone[tone]} اكتب بريدًا إلكترونيًا قصيرًا (أقل من 150 كلمة) يدعو الجمهور المحدد لمقابلة مدتها 15-30 دقيقة. اشمل سطر الموضوع. استخدم {first_name} و{your_name} كمتغيرات. اذكر بوضوح أنك لا تبيع شيئًا واقترح حافزًا.`;
   }
-  return `You are an expert copywriter specialised in user-research recruitment. Write a concise email (under 200 words) in a ${tone} tone inviting the target audience to a 15-30 minute interview. Include a Subject line. Use {first_name} and {your_name} as merge variables. Make it crystal clear you are NOT selling anything. Suggest an incentive (gift card, store credit, etc). End with a clear ask: reply with a few times.`;
+  return `You are an expert copywriter specialised in user-research recruitment. ${toneInstructions[tone]} Write a concise email (under 150 words) inviting the target audience to a 15-30 minute interview. Include a Subject line. Use {first_name} and {your_name} as merge variables. Make it crystal clear you are NOT selling anything. Suggest an incentive (gift card, store credit, etc). End with a clear ask: reply with a few times.`;
 }
 
 export function EmailGen() {

@@ -8,7 +8,6 @@ type InterviewType = {
   id: string;
   titleKey: string;
   bodyKey: string;
-  // simple keyword heuristics — Phase 2 will replace with an AI call
   keywords: string[];
 };
 
@@ -17,46 +16,59 @@ const TYPES: InterviewType[] = [
     id: 'discovery',
     titleKey: 'diagTypeDiscovery',
     bodyKey: 'diagTypeDiscoveryBody',
-    keywords: ['discover', 'explore', 'unmet need', 'jobs to be done', 'jtbd', 'problem space', 'market fit', 'early stage', 'new market', 'segment', 'persona'],
+    keywords: ['discover', 'explore', 'unmet need', 'jobs to be done', 'jtbd', 'problem space', 'market fit', 'early stage', 'new market', 'segment', 'persona', 'need', 'opportunity', 'market', 'customer', 'research', 'understand', 'learn', 'behavior', 'habit', 'audience'],
   },
   {
     id: 'usability',
     titleKey: 'diagTypeUsability',
     bodyKey: 'diagTypeUsabilityBody',
-    keywords: ['usability', 'use', 'using', 'flow', 'click', 'tap', 'find', 'navigate', 'confused', 'broken', 'stuck', 'task', 'prototype', 'feature', 'ui', 'ux'],
+    keywords: ['usability', 'flow', 'click', 'tap', 'navigate', 'confused', 'broken', 'stuck', 'prototype', 'ui', 'ux', 'interface', 'screen', 'button', 'menu', 'dropdown', 'user interface', 'user experience'],
   },
   {
     id: 'concept',
     titleKey: 'diagTypeConcept',
     bodyKey: 'diagTypeConceptBody',
-    keywords: ['concept', 'idea', 'pitch', 'value', 'mock', 'prototype', 'react', 'feedback', 'opinion', 'positioning', 'message', 'landing'],
+    keywords: ['concept', 'idea', 'pitch', 'mock', 'prototype', 'react', 'feedback', 'opinion', 'positioning', 'message', 'landing', 'validate', 'test idea', 'new product', 'proposition', 'wireframe', 'mock-up', 'value proposition'],
   },
   {
     id: 'churn',
     titleKey: 'diagTypeChurn',
     bodyKey: 'diagTypeChurnBody',
-    keywords: ['churn', 'cancel', 'leave', 'left', 'quit', 'unsubscribe', 'attrition', 'win-back', 'lost', 'inactive', 'lapsed'],
+    keywords: ['churn', 'cancel', 'leave', 'left', 'quit', 'unsubscribe', 'attrition', 'win-back', 'lost', 'inactive', 'lapsed', 'retention', 'lost customer', 'drop off', 'stopped using', 'switched'],
   },
   {
     id: 'pricing',
     titleKey: 'diagTypePricing',
     bodyKey: 'diagTypePricingBody',
-    keywords: ['price', 'pricing', 'pay', 'paying', 'cost', 'expensive', 'cheap', 'plan', 'tier', 'willingness to pay', 'wtp', 'budget'],
+    keywords: ['price', 'pricing', 'pay', 'paying', 'cost', 'expensive', 'cheap', 'plan', 'tier', 'willingness to pay', 'wtp', 'budget', 'affordable', 'willingness', 'monetize', 'subscription', 'free', 'premium'],
   },
   {
     id: 'satisfaction',
     titleKey: 'diagTypeSatisfaction',
     bodyKey: 'diagTypeSatisfactionBody',
-    keywords: ['satisfaction', 'happy', 'love', 'hate', 'nps', 'csat', 'recommend', 'experience', 'feel'],
+    keywords: ['satisfaction', 'happy', 'love', 'hate', 'nps', 'csat', 'recommend', 'experience', 'feel', 'loyalty', 'sentiment', 'delight', 'frustration', 'unhappy'],
   },
 ];
 
 function recommend(text: string): { primary: InterviewType; alt: InterviewType[] } {
   const lower = text.toLowerCase();
+  const words = new Set(lower.split(/\W+/).filter(Boolean));
   const scored = TYPES.map(t => ({
     type: t,
-    score: t.keywords.reduce((s, k) => s + (lower.includes(k) ? 1 : 0), 0),
-  })).sort((a, b) => b.score - a.score);
+    score: t.keywords.reduce((s, k) => {
+      if (k.includes(' ')) {
+        // Multi-word phrase: higher weight
+        return s + (lower.includes(k) ? 3 : 0);
+      }
+      // Single word: word-boundary match
+      return s + (words.has(k) ? 1 : 0);
+    }, 0),
+  })).sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    // Tie-break: prefer Discovery over Usability
+    const order = ['discovery', 'concept', 'churn', 'pricing', 'satisfaction', 'usability'];
+    return order.indexOf(a.type.id) - order.indexOf(b.type.id);
+  });
   const primary = scored[0].score > 0 ? scored[0].type : TYPES[0]; // default Discovery
   const alt = scored.slice(1, 3).filter(s => s.score > 0).map(s => s.type);
   return { primary, alt };

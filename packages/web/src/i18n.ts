@@ -363,6 +363,18 @@ export const I18N: Record<Lang, Dict> = {
     helpA7: "Yes. Go to History and use Export All to download your interviews as JSON. You can also import previously exported data.",
     helpQ8: "What AI providers are supported?",
     helpA8: "Currently Google Gemini and OpenAI are supported. A demo mode is also available that works without an API key.",
+    // Tasks 1-11 additions
+    participantTranscriptTitle: "Your Interview Transcript",
+    goToDashboard: "Go to dashboard",
+    startNewInterview: "Start a new interview",
+    newInterviewAlert: "New interview completed!",
+    showBtn: "Show",
+    dataNS: "Data was not sufficient to generate this section.",
+    enterContactDetail: "Please enter your contact details:",
+    contactEmailPH: "your@email.com",
+    contactPhonePH: "+1 (555) 000-0000",
+    submitContact: "Submit",
+    landingParticipantPassPrompt: "Enter the participant passcode:",
   },
   ar: {
     brandName: "محاور",
@@ -723,6 +735,18 @@ export const I18N: Record<Lang, Dict> = {
     helpA7: "نعم. اذهب إلى السجل واستخدم تصدير الكل لتنزيل مقابلاتك بصيغة JSON. يمكنك أيضًا استيراد بيانات مصدّرة مسبقًا.",
     helpQ8: "ما المزوّدات المدعومة؟",
     helpA8: "حاليًا Google Gemini وOpenAI. يتوفر أيضًا وضع تجريبي يعمل بدون مفتاح API.",
+    // Tasks 1-11 additions
+    participantTranscriptTitle: "نص مقابلتك",
+    goToDashboard: "الذهاب للوحة التحكم",
+    startNewInterview: "بدء مقابلة جديدة",
+    newInterviewAlert: "تم إكمال مقابلة جديدة!",
+    showBtn: "عرض",
+    dataNS: "لم تكن البيانات كافية لإنشاء هذا القسم.",
+    enterContactDetail: "يرجى إدخال بيانات الاتصال الخاصة بك:",
+    contactEmailPH: "بريدك@مثال.com",
+    contactPhonePH: "+966 5x xxx xxxx",
+    submitContact: "إرسال",
+    landingParticipantPassPrompt: "أدخل رمز المشارك:",
   }
 };
 
