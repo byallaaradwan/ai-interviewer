@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { createT, type Lang } from '../i18n';
-import { isConfigured, singleShot } from '../lib/llm';
+import { isConfigured, singleShot, readLLMConfig } from '../lib/llm';
 
 type Ctx = { lang: Lang };
 
@@ -42,6 +42,16 @@ export function EmailGen() {
   const [output, setOutput] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [inlineKey, setInlineKey] = useState('');
+  const [configured, setConfigured] = useState(isConfigured());
+
+  const saveInlineKey = (v: string) => {
+    setInlineKey(v);
+    if (v.length > 10) {
+      localStorage.setItem('gemini_api_key', v);
+      setConfigured(true);
+    }
+  };
 
   const generate = async () => {
     setError('');
@@ -70,11 +80,21 @@ export function EmailGen() {
       </div>
 
       <div className="card">
-        {!isConfigured() && (
+        {!configured && (
           <div className="resume-banner" style={{ marginBottom: 14 }}>
             <div className="text">
               <h3>{t('llmNotConfiguredTitle')}</h3>
               <p>{t('llmNotConfiguredBody')}</p>
+            </div>
+            <div className="field" style={{ marginTop: 8 }}>
+              <label htmlFor="em-apikey">API Key</label>
+              <input
+                id="em-apikey"
+                type="password"
+                value={inlineKey}
+                onChange={e => saveInlineKey(e.target.value)}
+                placeholder="sk-... or AIza..."
+              />
             </div>
           </div>
         )}

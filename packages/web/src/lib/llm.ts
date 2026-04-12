@@ -2,7 +2,7 @@ import { PROVIDERS, type ProviderId } from '../providers';
 
 export function readLLMConfig() {
   const providerId = (localStorage.getItem('provider') || 'mock') as ProviderId;
-  const apiKey = localStorage.getItem('apiKey') || '';
+  const apiKey = localStorage.getItem('gemini_api_key') || localStorage.getItem('apiKey') || '';
   return { providerId, apiKey };
 }
 
