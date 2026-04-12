@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { setRole, PASSCODE } from '../lib/role';
+import { createT, type Lang } from '../i18n';
 import { MuhawerLogo } from './MuhawerLogo';
 
 type NavItem = { to: string; label: string; icon: string; end?: boolean; tourId?: string };
@@ -13,6 +14,8 @@ const ITEMS: NavItem[] = [
 ];
 
 export function ParticipantSideNav({ onNavigate }: { onNavigate?: () => void }) {
+  const lang: Lang = (localStorage.getItem('lang') as Lang) || 'en';
+  const t = createT(lang);
   const nav = useNavigate();
   const [askPass, setAskPass] = useState(false);
   const [pass, setPass] = useState('');
@@ -54,7 +57,7 @@ export function ParticipantSideNav({ onNavigate }: { onNavigate?: () => void }) 
             onClick={() => setAskPass(true)}
           >
             <span className="sidenav-icon" aria-hidden="true">↔</span>
-            <span className="sidenav-label">Switch to researcher</span>
+            <span className="sidenav-label">{t('navSwitchResearcher')}</span>
           </button>
         ) : (
           <div style={{ padding: '8px 16px' }}>

@@ -54,13 +54,13 @@ export function SideNav({ lang, onNavigate }: { lang: Lang; onNavigate?: () => v
       </div>
       <div className="sidenav-section">
         {ITEMS.map(renderItem)}
-        <button type="button" className="sidenav-item sidenav-btn" onClick={switchToParticipant}>
-          <span className="sidenav-icon" aria-hidden="true">↔</span>
-          <span className="sidenav-label">Switch to participant</span>
-        </button>
       </div>
       <div className="sidenav-footer">
         {FOOTER.map(renderItem)}
+        <button type="button" className="sidenav-item sidenav-btn" onClick={switchToParticipant}>
+          <span className="sidenav-icon" aria-hidden="true">↔</span>
+          <span className="sidenav-label">{t('navSwitchParticipant')}</span>
+        </button>
       </div>
     </nav>
   );
