@@ -5,6 +5,7 @@ import { singleShot } from './lib/llm';
 import { addPending, removePending } from './lib/role';
 import { CoachMark } from './components/CoachMark';
 import { OnboardingTour, type TourStep } from './components/OnboardingTour';
+import { MuhawerLogo } from './components/MuhawerLogo';
 
 const CHAT_TOUR: TourStep[] = [
   { target: '[data-tour="chat-input"]', text: 'Type your answer here and press Enter or click Send. The AI interviewer will guide you through the conversation.', position: 'top' },
@@ -1006,12 +1007,8 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
       {!insideLayout && (
         <div className="topbar">
           <div className="brand">
-            <div className="brand-emblem">
-              <svg viewBox="0 0 24 24">
-                <path d="M7 11a5 5 0 0 1 10 0v3l2 3H5l2-3v-3z" fill="white" />
-              </svg>
-            </div>
-            <span className="brand-label">AI Interviewer</span>
+            <MuhawerLogo size={32} />
+            <span className="brand-label">{lang === 'ar' ? 'محاور' : 'Muhawer'}</span>
           </div>
           <div className="row">
             {view === 'chat' && (

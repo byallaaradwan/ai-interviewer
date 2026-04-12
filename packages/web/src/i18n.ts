@@ -4,8 +4,9 @@ type Dict = Record<string, string | ((...args: any[]) => string)>;
 
 export const I18N: Record<Lang, Dict> = {
   en: {
+    brandName: "Muhawer",
     setupTitle: "Set up your interview",
-    setupSub: "Configure the AI interviewer before starting your session.",
+    setupSub: "Configure Muhawer before starting your session.",
     providerLabel: "AI Provider",
     providerHelp: "Choose which AI provider to use. Your API key must match the selected provider.",
     apiKeyLabel: "API Key",
@@ -46,7 +47,7 @@ export const I18N: Record<Lang, Dict> = {
     sysPromptLabel: "System prompt",
     characters: "characters",
     resetDefault: "Reset to default",
-    sysPromptHelp: "This controls the AI interviewer's persona, topic focus, and tone.",
+    sysPromptHelp: "This controls Muhawer's persona, topic focus, and tone.",
     startInterview: "Start Interview",
     eyebrowWelcome: "Welcome",
     welcomeTitle: "Let's have a chat",
@@ -273,8 +274,9 @@ export const I18N: Record<Lang, Dict> = {
     coachSaveParticipant: "Save this interview for a participant to complete. Switch to participant mode to try it.",
   },
   ar: {
+    brandName: "محاور",
     setupTitle: "إعداد المقابلة",
-    setupSub: "اضبط إعدادات وكيل المقابلة قبل بدء الجلسة.",
+    setupSub: "اضبط إعدادات محاور قبل بدء الجلسة.",
     providerLabel: "مزوّد الذكاء الاصطناعي",
     providerHelp: "اختر مزوّد الذكاء الاصطناعي. يجب أن يتطابق مفتاحك مع المزوّد المختار.",
     apiKeyLabel: "مفتاح API",
@@ -315,7 +317,7 @@ export const I18N: Record<Lang, Dict> = {
     sysPromptLabel: "موجه النظام",
     characters: "حرف",
     resetDefault: "إعادة التعيين الافتراضي",
-    sysPromptHelp: "يتحكم هذا في شخصية وكيل المقابلة وموضوعه ونبرته.",
+    sysPromptHelp: "يتحكم هذا في شخصية محاور وموضوعه ونبرته.",
     startInterview: "بدء المقابلة",
     eyebrowWelcome: "مرحبًا",
     welcomeTitle: "لنتحدث معًا",

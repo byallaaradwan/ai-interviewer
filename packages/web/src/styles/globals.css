@@ -202,12 +202,7 @@ select option { background: var(--bg); color: var(--text); }
   letter-spacing: -0.01em;
 }
 .sidenav-brand-mark {
-  width: 32px; height: 32px;
-  display: inline-flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, var(--grad-a, #10B1A7) 0%, var(--grad-b, #7C6FF7) 100%);
-  color: white; border-radius: 9px;
-  font-size: 12px; font-weight: 800; letter-spacing: 0.02em;
-  box-shadow: 0 4px 12px rgba(16,177,167,0.25);
+  width: 32px; height: 32px; flex-shrink: 0;
 }
 .sidenav-section { display: flex; flex-direction: column; gap: 2px; flex: 1; }
 .sidenav-footer { display: flex; flex-direction: column; gap: 2px; padding-top: 14px; border-top: 1px solid var(--border); margin-top: 14px; }
@@ -865,3 +860,18 @@ details.analytics { margin-top: 20px; border-top: 1px solid var(--border); paddi
 .tour-btn:hover { background: var(--primary-soft); border-color: var(--primary); }
 .tour-next { background: var(--primary); color: #fff; border-color: var(--primary); }
 .tour-next:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+
+/* ── Splash screen ── */
+.splash-screen {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  background: var(--bg);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.splash-screen.splash-out { opacity: 0; transform: scale(1.05); pointer-events: none; }
+.splash-logo-text {
+  margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--grad-a), var(--grad-b));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

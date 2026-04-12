@@ -1,6 +1,6 @@
 export function ParticipantHelp() {
   const faqs = [
-    { q: 'What is this?', a: 'AI Interviewer is a research tool that lets you share your experience through a short conversation. A researcher set up questions on a topic they want to learn about, and you answer them naturally.' },
+    { q: 'What is this?', a: 'Muhawer is a research tool that lets you share your experience through a short conversation. A researcher set up questions on a topic they want to learn about, and you answer them naturally.' },
     { q: 'Who sees my answers?', a: 'Only the researcher who created the interview. Your responses are never sold, shared with third parties, or used to train AI models.' },
     { q: 'How long does it take?', a: 'Most interviews take 8–12 minutes. You can stop anytime — your progress is saved.' },
     { q: 'Do I need an account?', a: 'No. You don\'t need to sign up or give your name. Everything is anonymous.' },
