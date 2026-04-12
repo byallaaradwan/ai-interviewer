@@ -782,6 +782,18 @@ details.analytics { margin-top: 20px; border-top: 1px solid var(--border); paddi
 .history-item-body ul { margin: 0; padding-inline-start: 20px; }
 .history-quote { padding: 10px 12px; background: var(--bg); border-inline-start: 3px solid var(--primary); border-radius: 6px; margin-bottom: 8px; }
 .history-quote-ctx { font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+.history-badge { display: inline-block; padding: 1px 6px; font-size: 0.72rem; background: var(--primary-soft); color: var(--primary); border-radius: 4px; margin-inline-start: 6px; font-weight: 600; vertical-align: middle; }
+.history-tags { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.history-tag { font-size: 0.75rem; padding: 2px 8px; background: var(--primary-soft); border-radius: 4px; color: var(--muted); }
+.history-report { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 16px; }
+.history-report-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.history-report-section h4 { margin: 0 0 8px; font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.theme-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.theme-tag { padding: 4px 10px; background: var(--primary-soft); color: var(--primary); border-radius: 12px; font-size: 0.8rem; font-weight: 500; }
+.mini-bar-chart { width: 100%; max-width: 220px; height: 24px; }
+.history-report-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.8rem; color: var(--muted); padding-top: 8px; border-top: 1px solid var(--border); }
+.brand-link { text-decoration: none; color: inherit; }
+.back-btn { margin-bottom: 16px; display: inline-flex; align-items: center; gap: 6px; }
 
 .onboarding-hint { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; margin-bottom: 16px; background: var(--primary-soft); border: 1px solid var(--border); border-radius: 10px; }
 .onboarding-hint-icon { font-size: 1.5rem; line-height: 1; }

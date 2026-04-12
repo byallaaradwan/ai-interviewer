@@ -34,6 +34,7 @@ export function History() {
   const t = createT(lang);
   const [entries, setEntries] = useState<HistoryEntry[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [reportId, setReportId] = useState<string | null>(null);
 
   useEffect(() => {
     setEntries(readHistory());
@@ -95,6 +96,8 @@ export function History() {
     year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 
+  const maxTurns = Math.max(...entries.map(e => e.turns || 0), 1);
+
   return (
     <div className="page">
       <div className="page-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
@@ -136,6 +139,10 @@ export function History() {
         <div className="history-list">
           {entries.map(e => {
             const isOpen = openId === e.id;
+            const isReport = reportId === e.id;
+            const themesLen = e.summary?.themes?.length || 0;
+            const quotesLen = e.summary?.quotes?.length || 0;
+            const insightsLen = e.summary?.insights?.length || 0;
             return (
               <div key={e.id} className={`card history-item ${isOpen ? 'is-open' : ''}`}>
                 <div className="history-item-head">
@@ -145,10 +152,19 @@ export function History() {
                       {fmtDate(e.ts)}
                       {e.turns ? ` · ${e.turns} ${t('turnsLabel')}` : ''}
                       {e.diagType ? ` · ${e.diagType}` : ''}
+                      {e.audience ? ` · ${e.audience}` : ''}
+                      {e.lang && <span className="history-badge">{e.lang.toUpperCase()}</span>}
                     </div>
+                    {(themesLen > 0 || quotesLen > 0 || insightsLen > 0) && (
+                      <div className="history-tags">
+                        {themesLen > 0 && <span className="history-tag">{themesLen} {t('themesCount')}</span>}
+                        {quotesLen > 0 && <span className="history-tag">{quotesLen} {t('quotesCount')}</span>}
+                        {insightsLen > 0 && <span className="history-tag">{insightsLen} {t('insightsCount')}</span>}
+                      </div>
+                    )}
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button type="button" className="btn btn-secondary" onClick={() => setOpenId(isOpen ? null : e.id)}>
+                    <button type="button" className="btn btn-secondary" onClick={() => { setOpenId(isOpen ? null : e.id); if (isOpen) setReportId(null); }}>
                       {isOpen ? t('historyHide') : t('historyView')}
                     </button>
                     <button type="button" className="btn btn-secondary" onClick={() => exportOne(e)} aria-label="Export">
@@ -176,12 +192,102 @@ export function History() {
                     {(e.summary.quotes && e.summary.quotes.length > 0) && (
                       <div>
                         <h4>{t('notableQuotes')}</h4>
-                        {e.summary.quotes.map((q, i) => (
+                        {e.summary.quotes.slice(0, 2).map((q, i) => (
                           <div key={i} className="history-quote">
                             <div className="history-quote-ctx">{q.context}</div>
                             <div>"{q.quote}"</div>
                           </div>
                         ))}
+                        {e.summary.quotes.length > 2 && !isReport && (
+                          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', margin: '4px 0 0' }}>
+                            +{e.summary.quotes.length - 2} more...
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Full report toggle */}
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => setReportId(isReport ? null : e.id)}
+                      style={{ marginTop: 8, alignSelf: 'flex-start' }}
+                    >
+                      {isReport ? t('hideReport') : t('viewFullReport')}
+                    </button>
+
+                    {isReport && (
+                      <div className="history-report">
+                        {/* Mini stats */}
+                        <div className="history-report-stats">
+                          <div className="stat-box">
+                            <div className="stat-value">{e.turns || 0}</div>
+                            <div className="stat-label">{t('turnsLabel')}</div>
+                          </div>
+                          <div className="stat-box">
+                            <div className="stat-value">{themesLen}</div>
+                            <div className="stat-label">{t('themesCount')}</div>
+                          </div>
+                          <div className="stat-box">
+                            <div className="stat-value">{quotesLen}</div>
+                            <div className="stat-label">{t('quotesCount')}</div>
+                          </div>
+                          <div className="stat-box">
+                            <div className="stat-value">{insightsLen}</div>
+                            <div className="stat-label">{t('insightsCount')}</div>
+                          </div>
+                        </div>
+
+                        {/* Theme pills */}
+                        {e.summary.themes && e.summary.themes.length > 0 && (
+                          <div className="history-report-section">
+                            <h4>{t('keyThemes')}</h4>
+                            <div className="theme-tags">
+                              {e.summary.themes.map((th, i) => (
+                                <span key={i} className="theme-tag">{th}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Turns bar */}
+                        {e.turns && e.turns > 0 && (
+                          <div className="history-report-section">
+                            <h4>{t('turnsLabel')}</h4>
+                            <svg viewBox="0 0 220 24" className="mini-bar-chart">
+                              <rect x="0" y="4" width={Math.max(8, (e.turns / maxTurns) * 200)} height="16" rx="4" fill="var(--primary)" opacity="0.7" />
+                              <text x={Math.max(8, (e.turns / maxTurns) * 200) + 6} y="17" fontSize="11" fill="var(--muted)">{e.turns}</text>
+                            </svg>
+                          </div>
+                        )}
+
+                        {/* All quotes */}
+                        {e.summary.quotes && e.summary.quotes.length > 0 && (
+                          <div className="history-report-section">
+                            <h4>{t('notableQuotes')}</h4>
+                            {e.summary.quotes.map((q, i) => (
+                              <div key={i} className="history-quote">
+                                <div className="history-quote-ctx">{q.context}</div>
+                                <div>"{q.quote}"</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* All insights */}
+                        {e.summary.insights && e.summary.insights.length > 0 && (
+                          <div className="history-report-section">
+                            <h4>{t('actionableInsights')}</h4>
+                            <ul>{e.summary.insights.map((ins, i) => <li key={i}>{ins}</li>)}</ul>
+                          </div>
+                        )}
+
+                        {/* Meta info */}
+                        <div className="history-report-meta">
+                          {e.audience && <span>{t('audienceLabel')}: {e.audience}</span>}
+                          {e.lang && <span>{t('langLabel')}: {e.lang.toUpperCase()}</span>}
+                          {e.diagType && <span>{t('diagTypeLabel')}: {e.diagType}</span>}
+                        </div>
                       </div>
                     )}
                   </div>

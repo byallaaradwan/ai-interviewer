@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { createT, I18N, type Lang } from './i18n';
 import { SummaryExtras } from './components/SummaryExtras';
 import { singleShot } from './lib/llm';
-import { addPending, removePending } from './lib/role';
+import { addPending, removePending, getRole } from './lib/role';
 import { CoachMark } from './components/CoachMark';
 import { OnboardingTour, type TourStep } from './components/OnboardingTour';
 import { MuhawerLogo } from './components/MuhawerLogo';
@@ -1006,10 +1006,10 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
     <div className="app">
       {!insideLayout && (
         <div className="topbar">
-          <div className="brand">
+          <a href={getRole() === 'participant' ? '/p' : getRole() === 'researcher' ? '/app' : '/landing'} className="brand brand-link">
             <MuhawerLogo size={32} />
             <span className="brand-label">{lang === 'ar' ? 'محاور' : 'Muhawer'}</span>
-          </div>
+          </a>
           <div className="row">
             {view === 'chat' && (
               <button className="icon-btn danger" onClick={() => setQuitModalOpen(true)} aria-label={t('quit')}>
@@ -1045,6 +1045,11 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
               <button className="lang-btn" onClick={() => { setLang('en'); setView('setup'); }}>English</button>
               <button className="lang-btn" onClick={() => { setLang('ar'); setView('setup'); }}>العربية</button>
             </div>
+            {!insideLayout && (
+              <a href="/landing" className="btn btn-secondary" style={{ marginTop: 20, display: 'inline-block', textDecoration: 'none' }}>
+                ← Back
+              </a>
+            )}
           </div>
         </div>
       )}
@@ -1065,6 +1070,13 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
             </div>
           )}
           <div className="card">
+            <a
+              href={getRole() === 'participant' ? '/p' : getRole() === 'researcher' ? '/app' : '/landing'}
+              className="btn btn-secondary back-btn"
+              style={{ textDecoration: 'none' }}
+            >
+              {dir === 'rtl' ? '→' : '←'} {t('backToDashboard')}
+            </a>
             <h1>{t('setupTitle')}</h1>
             <p className="subtitle">{t('setupSub')}</p>
 
@@ -1566,7 +1578,14 @@ ${history.map(m => `<div class="tx"><div class="role">${m.role === 'model' ? t('
               </div>
             </details>
 
-            <div className="row" style={{ marginTop: 28 }}>
+            <div className="row" style={{ marginTop: 28, flexWrap: 'wrap' }}>
+              <a
+                href={getRole() === 'participant' ? '/p' : getRole() === 'researcher' ? '/app' : '/landing'}
+                className="btn btn-secondary"
+                style={{ textDecoration: 'none' }}
+              >
+                {dir === 'rtl' ? '→' : '←'} {t('backToDashboard')}
+              </a>
               <button className="btn" onClick={handleCopySummary}>{t('copyClipboard')}</button>
               <button className="btn btn-secondary" onClick={handleDownloadMd}>{t('downloadMd')}</button>
               <button className="btn btn-secondary" onClick={handleDownloadJson}>{t('downloadJson')}</button>

@@ -17,6 +17,9 @@ export function ParticipantPlaceholder() {
         <Link to="/app/new" className="btn" style={{ marginTop: 16 }}>
           Open researcher app →
         </Link>
+        <Link to="/landing" className="btn btn-secondary" style={{ marginTop: 8, display: 'block', textAlign: 'center' }}>
+          ← Back to home
+        </Link>
       </div>
     </div>
   );
