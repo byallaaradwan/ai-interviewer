@@ -227,6 +227,9 @@ select option { background: var(--bg); color: var(--text); }
 }
 .sidenav-label { flex: 1; }
 .sidenav-btn { background: transparent; border: none; text-align: inherit; cursor: pointer; font: inherit; color: inherit; width: 100%; }
+.sidenav-switch { background: linear-gradient(135deg, var(--grad-a), var(--grad-b)); color: #fff; border: none; border-radius: 10px; padding: 7px 12px; margin: 6px 10px 4px; width: calc(100% - 20px); cursor: pointer; font: inherit; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; transition: opacity 0.2s, transform 0.15s; }
+.sidenav-switch:hover { opacity: 0.9; transform: scale(1.02); }
+.sidenav-switch:active { transform: scale(0.98); }
 
 .app-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .app-topbar {

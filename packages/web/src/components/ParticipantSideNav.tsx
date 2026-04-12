@@ -61,11 +61,11 @@ export function ParticipantSideNav({ onNavigate }: { onNavigate?: () => void }) 
         {!askPass ? (
           <button
             type="button"
-            className="sidenav-item sidenav-btn"
+            className="sidenav-switch"
             onClick={() => setAskPass(true)}
           >
-            <span className="sidenav-icon" aria-hidden="true">↔</span>
-            <span className="sidenav-label">{t('navSwitchResearcher')}</span>
+            <span aria-hidden="true">↔</span>
+            <span>{t('navSwitchResearcher')}</span>
           </button>
         ) : (
           <div style={{ padding: '8px 16px' }}>
